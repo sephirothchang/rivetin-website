@@ -28,5 +28,6 @@
 html[lang=zh-CN] body{font-family:'DM Sans','PingFang SC','Microsoft YaHei',sans-serif}
 html[lang=zh-CN] .hero h2,html[lang=zh-CN] .platform-statement h2,html[lang=zh-CN] .section-heading h2,html[lang=zh-CN] .start-section h2,html[lang=zh-CN] .community-section h2,html[lang=zh-CN] .docs-content h1{letter-spacing:-.025em;line-height:1.35}
 html[lang=zh-CN] p,html[lang=zh-CN] .capability-list{line-height:1.95}
+html[lang=zh-CN] .feature>p,html[lang=zh-CN] .footer-column h3,html[lang=zh-CN] .docs-content section>.section-label,html[lang=zh-CN] .panel-label,html[lang=zh-CN] .extension-name>span{font-family:'DM Sans','PingFang SC','Microsoft YaHei',sans-serif}
 html[lang=zh-CN] .feature h3,html[lang=zh-CN] .hero-side>p,html[lang=zh-CN] .section-heading>p,html[lang=zh-CN] .platform-statement p,html[lang=zh-CN] .feature-drawing text{font-family:'DM Sans','PingFang SC','Microsoft YaHei',sans-serif}
 @media(max-width:600px){.language-link{margin-left:auto;margin-right:20px;border:0;padding:10px 0}html[lang=zh-CN] .hero h2{font-size:clamp(24px,6.7vw,38px)}html[lang=zh-CN] .feature h3{font-size:18px}}
