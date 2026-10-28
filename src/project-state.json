@@ -1,10 +1,31 @@
 {
   "schemaVersion": 2,
-  "reviewedOn": "2026-10-28",
+  "reviewedOn": "2026-10-29",
   "repository": "https://github.com/sephirothchang/rivetin",
   "repositoryVisibility": "private",
-  "frameworkVersion": "0.2.1",
+  "frameworkVersion": "0.2.2",
+  "frameworkSourcePublication": {
+    "version": "0.2.2",
+    "commit": "f31821babc20cb20d8e1cbc3508a820a93666e5e",
+    "verifiedOn": "2026-10-29"
+  },
   "publicInstallerAvailable": false,
+  "candidateRelease": {
+    "status": "not-admitted",
+    "currentDeployment": "unverified"
+  },
+  "historicalAcceptance": {
+    "frameworkVersion": "0.2.0",
+    "reviewedOn": "2026-10-28",
+    "reference": "docs/0.2-validation.md",
+    "documentSHA256": "26d44b21fd363d75815abefb87d028db8a754002c253ef2805e6f92723700b8b",
+    "scope": "CloudTower 4.9.0 development/test environment only; not a production or all-version guarantee."
+  },
+  "catalogPublication": {
+    "v3": 3,
+    "v4": 4,
+    "uniqueExtensions": 4
+  },
   "installerProfiles": [
     {
       "image": "registry.smtx.io/cloudtower/tower:v4.9.0-rc-20260517114030",
@@ -31,7 +52,6 @@
         "frameworkMaxVersionExclusive": "0.3.0",
         "smtx": "none"
       },
-      "sourcePackageFilename": "rivetin-ipmi-redirection-0.1.4.rivetin.json",
       "catalogReleases": {
         "v4": {
           "version": "0.1.4",
@@ -41,11 +61,12 @@
           "version": "0.1.2",
           "status": "published"
         }
-      }
+      },
+      "sourcePackageFilename": "rivetin-ipmi-redirection-0.1.4.rivetin.json"
     },
     {
       "id": "rivetin-context-menu",
-      "version": "0.5.6",
+      "version": "0.5.9",
       "manifestName": "Resource context menus",
       "frameworkApi": 1,
       "declaredTowerBuilds": [
@@ -62,14 +83,17 @@
         "smtx": "none",
         "tower": "CloudTower 4.9.0 public DOM; framework 0.2 candidate, live validation pending."
       },
-      "sourcePackageFilename": "rivetin-context-menu-0.5.6.rivetin.json",
       "catalogReleases": {
-        "v4": null,
+        "v4": {
+          "version": "0.5.9",
+          "status": "published"
+        },
         "v3": {
           "version": "0.4.2",
           "status": "draft"
         }
-      }
+      },
+      "sourcePackageFilename": "rivetin-context-menu-0.5.9.rivetin.json"
     },
     {
       "id": "rivetin-ssh-channel",
@@ -90,18 +114,21 @@
         ],
         "smtx": "none"
       },
-      "sourcePackageFilename": "rivetin-ssh-channel-0.1.2.rivetin.json",
       "catalogReleases": {
-        "v4": null,
+        "v4": {
+          "version": "0.1.2",
+          "status": "published"
+        },
         "v3": {
           "version": "0.1.1",
           "status": "published"
         }
-      }
+      },
+      "sourcePackageFilename": "rivetin-ssh-channel-0.1.2.rivetin.json"
     },
     {
       "id": "rivetin-disk-smart-info",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "manifestName": "Disk SMART information",
       "frameworkApi": 1,
       "declaredTowerBuilds": [
@@ -118,14 +145,17 @@
         ],
         "smtx": "none"
       },
-      "sourcePackageFilename": "rivetin-disk-smart-info-0.1.5.rivetin.json",
       "catalogReleases": {
-        "v4": null,
+        "v4": {
+          "version": "0.1.6",
+          "status": "published"
+        },
         "v3": {
           "version": "0.1.3",
           "status": "published"
         }
-      }
+      },
+      "sourcePackageFilename": "rivetin-disk-smart-info-0.1.6.rivetin.json"
     },
     {
       "id": "rivetin-network-topology",
@@ -138,11 +168,11 @@
         "tower": "Local standalone demo only; live CloudTower compatibility has not been validated.",
         "towerBuilds": []
       },
-      "sourcePackageFilename": "rivetin-network-topology-0.1.0.rivetin.json",
       "catalogReleases": {
         "v4": null,
         "v3": null
-      }
+      },
+      "sourcePackageFilename": "rivetin-network-topology-0.1.0.rivetin.json"
     },
     {
       "id": "rivetin-security-policy-converter",
@@ -156,27 +186,11 @@
         "tower": "Offline preview only; no live CloudTower or Everoute build has been validated.",
         "towerBuilds": []
       },
-      "sourcePackageFilename": "rivetin-security-policy-converter-0.1.1.rivetin.json",
       "catalogReleases": {
         "v4": null,
         "v3": null
-      }
+      },
+      "sourcePackageFilename": "rivetin-security-policy-converter-0.1.1.rivetin.json"
     }
-  ],
-  "candidateRelease": {
-    "status": "not-admitted",
-    "currentDeployment": "unverified"
-  },
-  "historicalAcceptance": {
-    "frameworkVersion": "0.2.0",
-    "reviewedOn": "2026-10-28",
-    "reference": "docs/0.2-validation.md",
-    "documentSHA256": "0ad3317d145104d3762916f2fadf1ca6ba5c9fed626e811595305ff5f7676edd",
-    "scope": "CloudTower 4.9.0 development/test environment only; not a production or all-version guarantee."
-  },
-  "catalogPublication": {
-    "v3": 3,
-    "v4": 1,
-    "uniqueExtensions": 3
-  }
+  ]
 }

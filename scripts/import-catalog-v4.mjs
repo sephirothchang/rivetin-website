@@ -8,13 +8,11 @@ import { boundedFile, optionalBytes, optionalStat, safePath, publicCatalogState,
 import { INDEX_PATH, MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, exact, fail, sha256, validHash, parsePackagePath, parseJson, compareVersions } from './catalog-contract.mjs';
 import { V4_INDEX_PATH, validateV4Package, validateV4Transition } from './catalog-v4-contract.mjs';
 import { frozenV4Drop } from './catalog-v4-staging.mjs';
+import { publicationPlan,savePublication,reservePublication,writePublicationSnapshots,commitPublication,readPublicationJournal,verifyPublicationCommit,rollbackPublication,publicationOutput } from './catalog-release-files.mjs';
+import { CATALOG_LOCK,acquireOwner,releaseOwner } from './catalog-publisher-lock.mjs';
+import { recoverConfirmationOwned } from './catalog-release-confirm.mjs';
 
-const LOCK='catalog-import.lock', OWNER='catalog-v4-owner.lock', LEDGER='catalog-integrity.json';
-async function acquireOwner(local){
-  const owner=await open(path.join(local,OWNER),'wx',0o600).catch(error=>{if(error.code==='EEXIST')fail('CATALOG_OWNER_LOCKED');throw error;});
-  try{await owner.writeFile(encode({schemaVersion:1,id:randomUUID(),pid:process.pid}));await owner.sync();return owner;}catch(error){await owner.close();throw error;}
-}
-async function releaseOwner(local,owner){await owner.close();await unlink(path.join(local,OWNER));}
+const LOCK=CATALOG_LOCK,LEDGER='catalog-integrity.json';
 const encode=value=>Buffer.from(JSON.stringify(value,null,2)+'\n');
 async function event(root,name){
   const exists=await optionalStat(path.join(root,'events.ndjson'));
@@ -42,12 +40,15 @@ async function recoverOwned({siteRoot,transactionId,onPhase=async()=>{}}){
   if(!exact(lock,['schemaVersion','id','manifestSHA256'])||lock.schemaVersion!==1||lock.id!==transactionId||!validHash(lock.manifestSHA256))fail('CATALOG_LOCK_MISMATCH');
   const manifestRaw=await boundedFile(journal,'manifest.json',MAX_INDEX_BYTES);if(sha256(manifestRaw)!==lock.manifestSHA256)fail('CATALOG_BACKUP_CHANGED');
   const m=parseJson(manifestRaw,MAX_INDEX_BYTES);
-  if(!exact(m,['schemaVersion','id','stageSHA256','v3SHA256','previousV4SHA256','previousLedgerSHA256','newV4SHA256','newLedgerSHA256','oldPackages','newPackages'])||m.schemaVersion!==1||m.id!==transactionId||!validHash(m.stageSHA256)||!Array.isArray(m.oldPackages)||!Array.isArray(m.newPackages))fail('CATALOG_JOURNAL_INVALID');
+  if(m.kind==='release-confirmation')return recoverConfirmationOwned({siteRoot,journal,transactionId,manifest:m,onPhase});
+  const journalFields=['schemaVersion','id','stageSHA256','v3SHA256','previousV4SHA256','previousLedgerSHA256','newV4SHA256','newLedgerSHA256','oldPackages','newPackages'];
+  if(!(exact(m,journalFields)||exact(m,[...journalFields,'publication']))||m.schemaVersion!==1||m.id!==transactionId||!validHash(m.stageSHA256)||!Array.isArray(m.oldPackages)||!Array.isArray(m.newPackages))fail('CATALOG_JOURNAL_INVALID');
   const oldV3=await checkBytes(journal,'backup/catalog/plugins.json',m.v3SHA256,MAX_INDEX_BYTES);
   const oldLedger=await checkBytes(journal,'backup/catalog-integrity.json',m.previousLedgerSHA256,MAX_INDEX_BYTES);
   const newLedger=await checkBytes(journal,'candidate/catalog-integrity.json',m.newLedgerSHA256,MAX_INDEX_BYTES);
   const newV4=await checkBytes(journal,'candidate/catalog/v4/plugins.json',m.newV4SHA256,MAX_INDEX_BYTES);
   const oldV4=m.previousV4SHA256===null?null:await checkBytes(journal,'backup/catalog/v4/plugins.json',m.previousV4SHA256,MAX_INDEX_BYTES);
+  const publication=await readPublicationJournal({siteRoot,publicRoot,journal,manifest:m.publication,indexRaw:newV4});
   const oldRecords=ledger(parseJson(oldLedger,MAX_INDEX_BYTES)).packages;
   if(!same(oldRecords,m.oldPackages))fail('CATALOG_BACKUP_CHANGED');
   const expectedNew=ledger(parseJson(newLedger,MAX_INDEX_BYTES)).packages;
@@ -68,6 +69,7 @@ async function recoverOwned({siteRoot,transactionId,onPhase=async()=>{}}){
   if(events.some(item=>item.event==='committed')){
     if(!same(currentV4,newV4)||!same(currentLedger,newLedger))fail('CATALOG_ROLLBACK_CONFLICT');
     for(const record of m.newPackages)if(!await optionalBytes(publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES))fail('CATALOG_ROLLBACK_CONFLICT');
+    await verifyPublicationCommit(siteRoot,publicRoot,publication);
     await publicCatalogState(siteRoot,{allowLocked:true});await event(journal,'reconciled-committed');
     return {result:'confirmed-committed',transactionId,journal};
   }
@@ -76,6 +78,7 @@ async function recoverOwned({siteRoot,transactionId,onPhase=async()=>{}}){
     else{if(!same(await boundedFile(publicRoot,V4_INDEX_PATH.slice(1),MAX_INDEX_BYTES),newV4))fail('CATALOG_ROLLBACK_CONFLICT');await unlink(path.join(publicRoot,V4_INDEX_PATH.slice(1)));}
   }
   await onPhase('index-restored');
+  await rollbackPublication(siteRoot,publicRoot,publication,onPhase);
   if(!same(currentLedger,oldLedger))await replace(siteRoot,LEDGER,oldLedger,newLedger);
   await onPhase('ledger-restored');
   for(const record of m.newPackages){const actual=await optionalBytes(publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES);if(actual){if(sha256(actual)!==record.sha256)fail('CATALOG_ROLLBACK_CONFLICT');await unlink(path.join(publicRoot,record.path.slice(1)));}}
@@ -84,9 +87,9 @@ async function recoverOwned({siteRoot,transactionId,onPhase=async()=>{}}){
   return {result:'rolled-back',transactionId,journal};
 }
 
-export async function importV4({siteRoot,dropRoot,stageHash,baseHash,check=false,onPhase=async()=>{}}){
-  const drop=await frozenV4Drop(dropRoot,stageHash,baseHash);await safePath(siteRoot,'scripts',{directory:true});
-  const local=path.join(siteRoot,'.local'),transactionId=randomUUID();
+export async function importV4({siteRoot,dropRoot,stageHash,baseHash,check=false,onPhase=async()=>{},releaseRequestHash=null,publishedAt=new Date().toISOString()}){
+  const drop=await frozenV4Drop(dropRoot,stageHash,baseHash,releaseRequestHash);await safePath(siteRoot,'scripts',{directory:true});
+  const local=path.join(siteRoot,'.local'),transactionId=drop.releaseRequest?.requestId||randomUUID();
   const localInfo=await optionalStat(local);if(localInfo?.isSymbolicLink())fail('CATALOG_PATH_INVALID');await mkdir(local,{recursive:true});await safePath(siteRoot,'.local',{directory:true});
   const owner=await acquireOwner(local);
   let lock;
@@ -94,6 +97,18 @@ export async function importV4({siteRoot,dropRoot,stageHash,baseHash,check=false
   let release=true,prepared=false,journal;
   try{
     await lock.writeFile(encode({schemaVersion:1,id:transactionId,manifestSHA256:null}));await lock.sync();await onPhase('lock-initialized');
+    if(drop.releaseRequest&&await optionalStat(path.join(local,'catalog-v4-transactions',transactionId))){
+      const prior=path.join(local,'catalog-v4-transactions',transactionId),raw=await boundedFile(prior,'manifest.json',MAX_INDEX_BYTES),m=parseJson(raw,MAX_INDEX_BYTES);
+      if(m.id!==transactionId||m.stageSHA256!==stageHash||m.publication?.requestSHA256!==releaseRequestHash)fail('CATALOG_RELEASE_REQUEST_REUSED');
+      const events=(await boundedFile(prior,'events.ndjson',256*1024)).toString('utf8').trim().split('\n').map(line=>JSON.parse(line));
+      if(events.some(e=>e.event==='committed')){
+        const state=await publicCatalogState(siteRoot,{allowLocked:true}),record=state.publications.releases.find(r=>r.publicationId===m.publication.publicationId);
+        if(!record||!['local-committed','verified'].includes(record.status)||record.catalogSHA256!==m.newV4SHA256||record.metadataSHA256!==m.publication.newSidecarSHA256)fail('CATALOG_RELEASE_OUTCOME_UNKNOWN');
+        return {result:'already-local-committed',transactionId,journal:prior,publicationId:record.publicationId,current:state.publications.currentPublicationId===record.publicationId};
+      }
+      if(events.some(e=>e.event==='rolled-back'))fail('CATALOG_RELEASE_REQUEST_ABANDONED');
+      const anchor=encode({schemaVersion:1,id:transactionId,manifestSHA256:sha256(raw)});await lock.truncate(0);await lock.write(anchor,0,anchor.length,0);await lock.sync();release=false;fail('CATALOG_RELEASE_OUTCOME_UNKNOWN');
+    }
     const state=await publicCatalogState(siteRoot,{allowLocked:true});if(!state.catalog)fail('CATALOG_V3_REQUIRED');
     if(state.v4Raw&&sha256(state.v4Raw)!==baseHash&&!same(state.v4Raw,drop.indexRaw))fail('CATALOG_V4_BASE_CHANGED');
     if(state.v4Catalog)validateV4Transition(state.v4Catalog,drop.catalog);
@@ -106,21 +121,28 @@ export async function importV4({siteRoot,dropRoot,stageHash,baseHash,check=false
       if(!drop.packages.some(x=>x.path===entry.downloadPath))validateV4Package(await boundedFile(state.publicRoot,entry.downloadPath.slice(1),MAX_PACKAGE_BYTES),entry);
     }
     const newPackages=drop.packages.filter(p=>!state.packages.some(old=>old.path===p.path));
+    const publication=publicationPlan(state,drop,publishedAt);
     if(check)return {result:'checked',transactionId:null,published:drop.catalog.plugins.filter(x=>x.status==='published').length,added:newPackages.length};
+    if(publication?.reused)return {result:'unchanged',transactionId:null,publicationId:publication.record.publicationId,published:drop.catalog.plugins.filter(x=>x.status==='published').length,added:0};
     const txRoot=path.join(local,'catalog-v4-transactions');await mkdir(txRoot,{recursive:true});await safePath(local,'catalog-v4-transactions',{directory:true});
     journal=path.join(txRoot,transactionId);await mkdir(journal);
     const newLedger=encode({schemaVersion:1,packages});
     const manifest={schemaVersion:1,id:transactionId,stageSHA256:stageHash,v3SHA256:await snapshot(journal,'backup/catalog/plugins.json',state.indexRaw),previousV4SHA256:state.v4Raw?await snapshot(journal,'backup/catalog/v4/plugins.json',state.v4Raw):null,previousLedgerSHA256:await snapshot(journal,'backup/catalog-integrity.json',state.ledgerRaw),newV4SHA256:await snapshot(journal,'candidate/catalog/v4/plugins.json',drop.indexRaw),newLedgerSHA256:await snapshot(journal,'candidate/catalog-integrity.json',newLedger),oldPackages:state.packages,newPackages};
+    if(publication)manifest.publication=await savePublication(journal,publication);
     for(const record of state.packages)await snapshot(journal,'backup'+record.path,await boundedFile(state.publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES));
     for(const record of newPackages){const raw=await boundedFile(dropRoot,record.path.slice(1),MAX_PACKAGE_BYTES);if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_INPUT_CHANGED');await snapshot(journal,'candidate'+record.path,raw);}
     const manifestRaw=encode(manifest);await snapshot(journal,'manifest.json',manifestRaw);await event(journal,'prepared');
     const lockData=encode({schemaVersion:1,id:transactionId,manifestSHA256:sha256(manifestRaw)});await lock.truncate(0);await lock.write(lockData,0,lockData.length,0);await lock.sync();prepared=true;
     await onPhase('prepared');
+    await reservePublication(siteRoot,publication);if(publication)await onPhase('release-reserved');
     for(const record of newPackages){await exclusive(state.publicRoot,record.path.slice(1),await boundedFile(journal,'candidate'+record.path,MAX_PACKAGE_BYTES));await onPhase('package-written');}
     await replace(siteRoot,LEDGER,newLedger,state.ledgerRaw);await onPhase('ledger-written');
+    await writePublicationSnapshots(state.publicRoot,publication,drop.indexRaw,onPhase);
     await replace(state.publicRoot,V4_INDEX_PATH.slice(1),drop.indexRaw,state.v4Raw??null);await onPhase('index-written');
+    await commitPublication(siteRoot,state.publicRoot,publication,onPhase);
     const final=await publicCatalogState(siteRoot,{allowLocked:true});if(!same(final.indexRaw,state.indexRaw)||!same(final.v4Raw,drop.indexRaw)||!same(final.ledgerRaw,newLedger))fail('CATALOG_VERIFY_FAILED');
-    await event(journal,'committed');await onPhase('committed');return {result:'committed',transactionId,journal,published:drop.catalog.plugins.filter(x=>x.status==='published').length,added:newPackages.length};
+    let publicationResult={};if(publication){const raw=encode(publicationOutput(publication,drop));await exclusive(journal,'publication-output.json',raw);publicationResult={publicationId:publication.record.publicationId,publicationState:'local-committed',outputManifest:path.join(journal,'publication-output.json'),outputManifestSHA256:sha256(raw)};}
+    await event(journal,'committed');await onPhase('committed');return {result:'committed',transactionId,journal,published:drop.catalog.plugins.filter(x=>x.status==='published').length,added:newPackages.length,...publicationResult};
   }catch(error){
     if(prepared){
       release=false;
@@ -134,8 +156,8 @@ export async function importV4({siteRoot,dropRoot,stageHash,baseHash,check=false
 async function main(args){
   if(args[0]==='recover'&&args.length===3&&args[1]==='--transaction')return console.log(JSON.stringify(await recoverV4({siteRoot:fileURLToPath(new URL('../',import.meta.url)),transactionId:args[2]})));
   const values={};let check=false;
-  for(let i=0;i<args.length;i++){const key=args[i];if(key==='--check'&&!check){check=true;continue;}if(!['--drop','--stage-sha256','--base-sha256'].includes(key)||values[key]||!args[i+1]||args[i+1].startsWith('--'))fail('CATALOG_ARGUMENT_INVALID');values[key]=args[++i];}
-  if(Object.keys(values).length!==3)fail('CATALOG_ARGUMENT_INVALID');
-  console.log(JSON.stringify(await importV4({siteRoot:fileURLToPath(new URL('../',import.meta.url)),dropRoot:values['--drop'],stageHash:values['--stage-sha256'],baseHash:values['--base-sha256'],check})));
+  for(let i=0;i<args.length;i++){const key=args[i];if(key==='--check'&&!check){check=true;continue;}if(!['--drop','--stage-sha256','--base-sha256','--release-request-sha256'].includes(key)||values[key]||!args[i+1]||args[i+1].startsWith('--'))fail('CATALOG_ARGUMENT_INVALID');values[key]=args[++i];}
+  if(!values['--drop']||!values['--stage-sha256']||!values['--base-sha256'])fail('CATALOG_ARGUMENT_INVALID');
+  console.log(JSON.stringify(await importV4({siteRoot:fileURLToPath(new URL('../',import.meta.url)),dropRoot:values['--drop'],stageHash:values['--stage-sha256'],baseHash:values['--base-sha256'],releaseRequestHash:values['--release-request-sha256']||null,check})));
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))main(process.argv.slice(2)).catch(error=>{console.error(JSON.stringify({error:/^[A-Z][A-Z0-9_]+$/u.test(error.message)?error.message:'CATALOG_V4_IMPORT_FAILED',transactionId:error.transactionId??null}));process.exitCode=1;});

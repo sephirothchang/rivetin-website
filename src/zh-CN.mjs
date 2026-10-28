@@ -145,13 +145,11 @@ export const messages = {
   "Explore VM, distributed-switch, host and physical-switch relationships.": "探索虚拟机、分布式交换机、主机与物理交换机的关系。",
   "Create VDS and virtual-network drafts and review host uplink changes.": "创建 VDS 和虚拟网络草稿，审阅主机上联变更。",
   "Exercise protected-network checks and a simulated confirm-or-rollback flow.": "演示受保护网络检查，以及模拟的确认或回滚流程。",
-  "This is a standalone local demonstration with synthetic data. Draft creation, uplink edits and timed rollback are simulations, not live network changes. No CloudTower build has been accepted for this extension; its tested-build list is empty and real installation must remain gated.": "这是使用人工数据的独立本地演示。草稿创建、上联编辑和限时回滚均为模拟，不会修改真实网络。该扩展尚未通过任何 CloudTower 构建的实机验收，已测试构建列表为空，真实安装仍受兼容性门禁限制。",
   "None. Live installation and activation remain gated.": "无。真实安装与启用仍受门禁限制。",
   "Offline preview": "离线预览",
   "Import normalized VM inventory and traffic CSV with explicit column mapping.": "导入规范化虚拟机库存和流量 CSV，明确配置列映射。",
   "Resolve exact IPv4 identities and review label-pair MONITOR candidates.": "精确匹配 IPv4 身份，审阅标签对 MONITOR 候选策略。",
   "Export a manually confirmed rivetin-policy-review-v1 review draft.": "手工确认后，导出 rivetin-policy-review-v1 审阅草稿。",
-  "The exported JSON is a project-specific review draft, not an Everoute API request or directly importable policy. Inputs stay in memory; only the saved label key uses shared configuration. The extension does not make AI calls, write labels, deploy policies or enable WORK mode. No live CloudTower or Everoute build has been validated.": "导出的 JSON 是本项目的策略审阅草稿，并非 Everoute API 请求或可直接导入的策略。输入保留在内存中，只有保存的标签键使用共享配置。扩展不调用 AI、不写标签、不部署策略，也不启用 WORK 模式。尚未验证真实 CloudTower 或 Everoute 构建。",
   "Documentation — Rivetin": "使用文档 — Rivetin",
   "Overview": "概览",
   "Builds & availability": "构建与获取方式",
@@ -250,7 +248,7 @@ export const messages = {
   "isn’t connected yet.": "还没有连接。",
   "Head back to Rivetin and pick up where you left off.": "返回 Rivetin，从熟悉的地方继续。",
   "Back to Rivetin": "返回 Rivetin",
-  "Source 0.1.2 is a compatibility candidate for the 0.2 framework line; the historical public package remains 0.1.1. Earlier host-key, authentication and identity-command checks do not validate this candidate. Device-policy v2 backend and migration remain incomplete in the reviewed 0.2 validation record. Real SMART collection and unattended daily execution remain unverified; collection stays disabled until explicitly reviewed and approved.": "源码 0.1.2 是面向 0.2 框架的兼容候选；历史公开包仍为 0.1.1。较早的主机指纹、认证和身份命令检查不能验证本候选。所审阅的 0.2 验证记录中，设备策略 v2 后端与迁移仍未完成。真实 SMART 采集和每日自动执行仍未验证，采集保持关闭，须明确审阅和批准。",
+  "SSH 0.1.2 completed limited read-only UI checks with Rivetin 0.2.2 while the channel remained off. Its Rivetin 0.2 download follows the validated v4 catalog; historical v3 version 0.1.1 remains separate. These checks did not execute host connections, commands, collection, approval, migration or cross-day schedules. Real SMART samples and unattended daily execution remain pending real-environment testing; missing conditions do not imply a failed or passed test.": "SSH 0.1.2与Rivetin 0.2.2完成受限只读界面检查，通道保持关闭。面向Rivetin 0.2的下载以已验证的v4目录为准；历史v3版本0.1.1单独保留。本次未执行主机连接、命令、采集、审批、迁移或跨日计划。真实SMART样本与每日自动执行待真实环境测试；条件缺失不代表失败或通过。",
   "The historical 0.2.0 record covers six cross-build targets. Only Windows amd64 has native execution and controlled upgrade evidence; the other five targets have no native execution evidence. This does not validate the current source build. File names identify build outputs, not public download links.": "历史 0.2.0 记录覆盖六个平台交叉构建。只有 Windows amd64 有原生执行和受控升级证据，其余五个平台没有原生执行证据。这不能验证当前源码构建。文件名表示构建输出，不是公开下载链接。",
   "Historical candidate evidence: cross-builds for six targets; native execution and controlled upgrade for Windows amd64 only.": "历史候选证据：六个平台交叉构建；原生执行和受控升级仅覆盖 Windows amd64。",
   "The reviewed source provides extension management, independent settings, lifecycle controls, an extension marketplace and operation logs. Functional settings are saved on the server; the browser stores personal interface preferences only.": "所审阅的源码提供扩展管理、独立设置、生命周期控制、扩展市场和操作日志。功能配置保存在服务器端，浏览器仅保留个人界面偏好。",
@@ -271,7 +269,6 @@ export const messages = {
   "Source 0.1.5 is a local candidate for Rivetin 0.2.x, adding recovery guidance for binding, permission, session and disabled-plugin errors. The historical public package remains 0.1.3 for the 0.1 framework line. Local checks do not validate the new framework/plugin combination. Real SMART health samples, persistent history and cross-day execution remain unverified. Unavailable data must not be presented as healthy.": "源码 0.1.5 是面向 Rivetin 0.2.x 的本地候选，新增绑定、权限、会话和插件停用错误的恢复提示。历史公开包仍为面向 0.1 框架的 0.1.3。本地检查不能验证新框架与插件组合。真实 SMART 健康样本、持久历史及跨日执行仍未验证，数据不可用时不能显示为健康。",
   "v0.1.5 · Source": "v0.1.5 · 源码",
   "v0.5.6 · Source": "v0.5.6 · 源码",
-  "Source 0.5.6 is a CloudTower 4.9.0 candidate for the 0.2 framework line. It extends stale-control rejection to resource rows and checks disabled controls. Source 0.5.5 did not pass independent review and was not frozen as a release package. A local fixed package and independent review are complete; real framework/plugin combination acceptance remains pending. The historical catalog entry is still a 0.4.2 draft with no public package.": "源码 0.5.6 是面向 0.2 框架的 CloudTower 4.9.0 候选，将旧控件拒绝机制扩展到资源行并检查禁用控件。源码 0.5.5 未通过独立审查，也未固定为发布包。本地固定包与独立复核已完成，真实框架与插件组合验收仍待完成。历史目录条目仍为 0.4.2 草稿，没有公开包。",
   "Rivetin 0.2 release": "Rivetin 0.2 发布版",
   "Published package": "已发布包",
   "Download for Rivetin 0.2": "下载 Rivetin 0.2 插件包",
@@ -283,7 +280,16 @@ export const messages = {
   "Framework installers remain unavailable. Historical v3 packages do not pass the 0.2 gate.": "框架安装器尚未公开。历史 v3 包无法通过 0.2 门禁。",
   "The package path uses the published v4 IPMI version when available; otherwise it keeps an explicit version placeholder. It is not proof of release or live acceptance. Old v3 declarations do not pass the 0.2 gate. Obtain a verified package and check its framework range before running this example.": "有已发布 v4 IPMI 版本时，示例包路径使用该版本；否则保留明确的版本占位符。示例不能证明发布或实机验收。旧 v3 声明无法通过 0.2 门禁。运行前请取得经过验证的包并核对框架版本范围。",
   "CloudTower 4.9.0 development/test environment only; not a production or all-version guarantee.": "仅限 CloudTower 4.9.0 开发测试环境，不构成生产或全版本保证。",
-  "Fixed IPMI 0.1.4 was verified with Rivetin 0.2.0 in one exact CloudTower 4.9.0 development/test profile. Checks covered draft save/discard and settings restoration, one host with IPMI plus two without, lifecycle, and preservation of HTTPS links, rel attributes and copy controls. This does not cover switching between two hosts with IPMI values, clipboard execution, different administrators, real BMC access, automatic login or KVM. The historical v3 package remains 0.1.2 for the 0.1 framework line.": "固定 IPMI 0.1.4 已在一个准确的 CloudTower 4.9.0 开发测试配置中与 Rivetin 0.2.0 完成验证。范围包括草稿保存与丢弃、原设置恢复、一个有 IPMI 和两个无 IPMI 的主机、生命周期，以及 HTTPS 链接、rel 属性和复制控件保留。未覆盖两个有 IPMI 值的主机间切换、实际剪贴板执行、不同管理员、真实 BMC 访问、自动登录或 KVM。历史 v3 包仍为面向 0.1 框架的 0.1.2。"
+  "Fixed IPMI 0.1.4 was verified with Rivetin 0.2.0 in one exact CloudTower 4.9.0 development/test profile. Checks covered draft save/discard and settings restoration, one host with IPMI plus two without, lifecycle, and preservation of HTTPS links, rel attributes and copy controls. This does not cover switching between two hosts with IPMI values, clipboard execution, different administrators, real BMC access, automatic login or KVM. The historical v3 package remains 0.1.2 for the 0.1 framework line.": "固定 IPMI 0.1.4 已在一个准确的 CloudTower 4.9.0 开发测试配置中与 Rivetin 0.2.0 完成验证。范围包括草稿保存与丢弃、原设置恢复、一个有 IPMI 和两个无 IPMI 的主机、生命周期，以及 HTTPS 链接、rel 属性和复制控件保留。未覆盖两个有 IPMI 值的主机间切换、实际剪贴板执行、不同管理员、真实 BMC 访问、自动登录或 KVM。历史 v3 包仍为面向 0.1 框架的 0.1.2。",
+  "Source 0.5.7 is a local repair candidate for the 0.2 framework line. Version 0.5.6 did not show its menu on the first right-click in the real global VM list and was safely disabled; it is not cleared for use. The repair still needs independent artifact review and a new real-environment test. Local checks do not establish acceptance. The historical catalog entry remains a 0.4.2 draft with no public package.": "源码 0.5.7 是面向 0.2 框架的本地修复候选。0.5.6 在真实全局虚拟机列表首次右键时未显示菜单，已安全停用，未获准使用。修复仍待独立制品复核和新的真实环境复验，本地检查不能证明验收。历史目录条目仍为 0.4.2 草稿，没有公开包。",
+  "This is a standalone local demonstration with synthetic data. Local validation covers keyboard movement of a VDS together with its child networks and updated connections. Draft creation, uplink edits and timed rollback remain simulations, not live network changes. Source publication does not establish a standard plugin release or CloudTower acceptance; real installation remains gated.": "这是使用合成数据的独立本地演示。本地验证覆盖键盘移动 VDS 时子网络一起移动、连线同步更新。草稿创建、上联编辑和计时回退仍为模拟，不修改真实网络。源码发布不代表标准插件包发布或 CloudTower 验收，真实安装仍受门禁限制。",
+  "The exported JSON is a project-specific review draft, not an Everoute API request or directly importable policy. Inputs stay in memory; only the saved label key uses shared configuration. The extension does not make AI calls, write labels, deploy policies or enable WORK mode. Source updates remain an offline preview, with no published standard plugin package or live CloudTower/Everoute acceptance.": "导出的 JSON 是项目自定义审查稿，并非 Everoute API 请求或可直接导入的策略。输入仅保留在内存中，只有保存的标签键使用共享配置。本扩展不调用 AI、不写标签、不部署策略，也不启用 WORK 模式。源码更新仍为离线预览，没有已发布的标准插件包或真实 CloudTower/Everoute 验收。",
+  "v0.5.7 · Source": "v0.5.7 · 源码",
+  "Repair candidate": "修复候选",
+  "Framework candidate": "框架候选",
+  "Recovery fix candidate under review": "恢复流程修复候选复核中",
+  "Current deployment": "当前部署",
+  "Framework 0.2.1 recovery-flow fixes remain under review and have not been deployed. The current development/test deployment remains framework 0.2.0 and is enabled. Local recovery checks do not establish acceptance of new client builds or live recovery behavior.": "框架 0.2.1 的恢复流程修复候选仍在复核，尚未部署。当前开发测试环境仍部署框架 0.2.0，保持启用。本地恢复检查不能证明新客户端构建或真实恢复行为已经验收。"
 };
 
 export const richMessages = {
@@ -300,3 +306,49 @@ export const richMessages = {
   "Published v4 packages for Rivetin 0.2: {0}. Historical v3 packages for Rivetin 0.1: {1}. Published extensions across both catalogs: {2}. Framework installers are not publicly available.": "面向 Rivetin 0.2 的已发布 v4 包：{0}。面向 Rivetin 0.1 的历史 v3 包：{1}。两个目录中的已发布扩展：{2}。框架安装器尚未公开。",
   "Rivetin 0.2 uses the v4 catalog. Only {0} entries with verified package bytes and a matching framework range get a primary download. Historical v3 packages remain separately available for the 0.1 framework line; they are not a fallback for the 0.2 gate.": "Rivetin 0.2 使用 v4 目录。只有已核对包字节且框架版本范围匹配的 {0} 条目提供主下载。历史 v3 包为 0.1 框架单独保留，不作为 0.2 门禁的回退。"
 };
+
+Object.assign(messages, {
+  "Catalog release ID: not registered. The first ID is assigned by a publication transaction.": "市场清单发布标识：尚未登记。首次标识由实际发行事务分配。",
+  "Catalog release ID could not be verified. Package availability is recorded separately.": "市场清单发布标识尚未验证；包的可用性单独记录。",
+  "Publication readback is pending.": "发布回读待完成。"
+});
+Object.assign(richMessages, {
+  "Catalog release: {0}. This identifies the catalog snapshot; plugin versions and verification scopes are recorded separately.": "市场清单发布标识：{0}。它标识清单快照，插件版本与验证范围分别记录。",
+  "Publication readback recorded: {0}.": "发布回读记录日期：{0}。"
+});
+
+Object.assign(messages, {
+  "Source 0.5.7 is a locally fixed repair candidate for the 0.2 framework line, with local checks and independent artifact review. Version 0.5.6 had a recorded first-right-click failure in the real global VM list. The repaired candidate awaits its new framework/plugin test batch. The historical catalog entry remains a 0.4.2 draft with no public package.": "源码0.5.7是面向0.2框架的本地修复候选，已完成本地检查与独立制品复核。0.5.6曾在真实全局虚拟机列表首次右键时失败，原记录保留。修复候选待新的框架与插件组合测试批次；历史目录仍为0.4.2草稿，没有公开包。",
+  "Source 0.1.2 is a locally fixed compatibility candidate for Rivetin 0.2; the historical public package remains 0.1.1. Earlier host-key and identity checks do not validate this exact candidate. Real connection and collection tests await the assigned batch, with approval and migration handled separately. Real SMART samples and cross-day execution remain pending; unavailable conditions do not establish either failure or acceptance.": "源码0.1.2是面向Rivetin 0.2的本地兼容候选；历史公开包仍为0.1.1。先前主机密钥与身份检查不能证明本候选已验收。真实连接与采集等待对应批次，审批与迁移分别处理。真实SMART样本与跨日执行仍待测试；条件缺失不等于失败或通过。",
+  "Source 0.1.6 is a local Rivetin 0.2 candidate that explains the authorized-drive command form and per-drive plan scope. The historical public package remains 0.1.3 for the 0.1 framework line. Local tests use controlled inventory and sample substitutes. Real health samples, persistent history and cross-day execution await real-environment testing; missing conditions do not prohibit a release or imply a passed test. Unavailable data must not be presented as healthy.": "源码0.1.6是面向Rivetin 0.2的本地候选，说明授权磁盘命令范式与逐盘计划范围。历史公开包仍为面向0.1框架的0.1.3。本地测试使用受控库存与样本替身。真实健康样本、持久历史和跨日执行待真实环境测试；纯缺条件不禁止发布，也不代表测试通过。不可用数据不能显示为健康。",
+  "The coordinator reported a fixed Rivetin 0.2.2 build deployed and enabled in one controlled development/test environment on October 29, 2026. Source publication and plugin acceptance are separate stages. This observation does not validate the entire working tree, new plugin combinations, real host samples or every client recovery path.": "主协调报告：2026年10月29日，一个固定Rivetin 0.2.2构建已在受控开发测试环境部署启用。源码发布和插件验收是独立阶段；该观察不能证明整个工作树、新插件组合、真实主机样本或所有客户端恢复路径已经通过。",
+  "Awaiting live testing": "待真实环境测试",
+  "Fixed build deployed; framework source synchronized": "固定构建已部署，框架源码已同步",
+  "Reviewed deployment · 2026-10-29": "部署审阅记录 · 2026-10-29",
+  "· Enabled (controlled development/test)": "· 已启用（受控开发测试）",
+  "Source snapshot · 2026-10-29": "源码快照 · 2026-10-29",
+  "Framework source 0.2.2": "框架源码0.2.2",
+  "Reviewed 2026-10-29": "审阅日期2026-10-29"
+});
+
+Object.assign(messages, {
+  "v0.1.6 · Source": "v0.1.6 · 源码",
+  "Public installation packages are not available yet. Reviewed 2026-10-29.": "尚无公开安装包。审阅日期：2026-10-29。",
+  "Reviewed October 29, 2026 against local documentation, manifests and public catalog bytes. Historical acceptance belongs to the referenced fixed candidate. This website task performs local checks only; it does not establish a new deployment or release.": "2026年10月29日对照本地文档、描述文件和公开目录字节完成审阅。历史验收属于引用的固定候选；官网本轮执行本地检查，不代表本角色进行了真实部署或发布。"
+});
+
+Object.assign(richMessages, {"The catalog schema number {0}, an ML publication ID and a plugin version describe different things. A publication ID identifies exact catalog bytes; it does not establish a plugin test result or grant deployment permission.": "清单结构版本{0}、ML发布标识和插件版本分别表示不同内容。发布标识绑定清单的精确字节，不代表插件测试通过，也不授予部署权限。"});
+
+Object.assign(messages, {"Published framework source":"已同步的框架源码", "The coordinator reported a fixed Rivetin 0.2.2 build deployed and enabled in one controlled development/test environment on October 29, 2026. Framework source 0.2.2 was also synchronized to the repository; plugin acceptance and market admission remain separate stages. This observation does not validate the entire working tree, new plugin combinations, real host samples or every client recovery path.":"主协调报告：2026年10月29日，一个固定Rivetin 0.2.2构建已在受控开发测试环境部署启用，框架0.2.2源码亦已同步至仓库。插件验收与市场准入仍分别记录；该观察不能证明整个工作树、新插件组合、真实主机样本或所有客户端恢复路径已经通过。"});
+
+Object.assign(messages, {
+  "Version 0.1.4 completed limited read-only checks with Rivetin 0.2.2, with its fixed package bytes unchanged. These checks are separate from the historical 0.2.0 draft save/discard, lifecycle and settings-restoration tests. Real BMC access, automatic login, KVM, clipboard execution, different administrators and switching between two populated BMC hosts remain unverified. The historical v3 package remains 0.1.2 for the 0.1 framework line.": "0.1.4已在Rivetin 0.2.2组合完成受限只读检查，固定包字节未变。这与历史0.2.0的草稿保存与丢弃、生命周期及配置恢复测试分别记录。真实BMC访问、自动登录、KVM、剪贴板执行、不同管理员和两个有BMC值的主机间切换仍未验证；历史v3包仍为面向0.1框架的0.1.2。",
+  "Version 0.5.9 completed controlled checks of first opening, route revisits, object-specific CPU, memory, disk and NIC initial values, cancellation, and the documented Shift-key boundary at 1280 by 720. No resource change was saved. Version 0.5.7 had an actual route-revisit CPU-editor failure; 0.5.8 was rejected during review, and the earlier 0.5.6 first-right-click failure remains recorded. Those results do not transfer to other builds, viewports or resource-changing actions.": "0.5.9已完成受控检查：首次打开、往返导航、当前对象的CPU、内存、磁盘和网卡初值、取消，以及1280×720范围内记录的Shift键边界；没有保存资源变更。0.5.7曾发生往返后CPU编辑器打不开的实际失败，0.5.8在评审中被拒绝，更早的0.5.6首次右键失败也保留记录。这些结果不自动适用于其他构建、视口或真实资源变更。",
+  "Version 0.1.2 completed limited read-only interface checks with Rivetin 0.2.2 while the channel remained off. These checks did not execute SSH connections, host commands, collection, approval, migration or cross-day schedules. Those operations remain pending real-environment testing. The historical v3 package remains 0.1.1 for the 0.1 framework line; current download availability follows the published v4 catalog.": "0.1.2已在Rivetin 0.2.2组合完成通道保持停用时的受限只读界面检查，没有执行SSH连接、主机命令、采集、审批、迁移或跨日计划；这些操作仍待真实环境测试。历史v3包仍为面向0.1框架的0.1.1，当前下载以已发布v4目录为准。",
+  "Version 0.1.6 completed limited read-only interface checks with Rivetin 0.2.2 while collection remained off. The metric panel body, real SMART health samples, collection, persistent history and cross-day execution remain pending. Local tests use controlled inventory and sample substitutes. Missing real conditions do not prevent a release or establish a passed test; unavailable data must not be presented as healthy. The historical v3 package remains 0.1.3 for the 0.1 framework line.": "0.1.6已在Rivetin 0.2.2组合完成采集保持停用时的受限只读界面检查。指标面板正文、真实SMART健康样本、采集、持久历史和跨日执行仍待测试。本地测试使用受控库存与样本替身。纯缺真实条件不禁止发布，也不代表测试通过；不可用数据不能显示为健康。历史v3包仍为面向0.1框架的0.1.3。",
+  "Limited live validation": "受限实机验证",
+  "Real samples pending": "真实样本待测试",
+  "v0.5.9 · Source": "v0.5.9 · 源码"
+});
+
+Object.assign(messages, {"Published plugin source":"已同步的插件源码"});

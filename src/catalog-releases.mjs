@@ -1,4 +1,5 @@
 import { compareVersions, validVersion } from '../scripts/catalog-contract.mjs';
+import { validateRelease } from '../scripts/catalog-release-contract.mjs';
 
 const published = catalog => catalog?.plugins.filter(item => item.status === 'published') ?? [];
 
@@ -30,4 +31,12 @@ export function catalogMetadata(id, state) {
     return item ? { version: item.version, status: item.status } : null;
   };
   return { v4: metadata(state.v4Catalog), v3: metadata(state.catalog) };
+}
+export function catalogReleaseIdentity(state){
+  if(!state.releaseMetadata)return {status:'unregistered',publicationId:null};
+  try{
+    const metadata=validateRelease(state.releaseMetadata,state.v4Raw),record=state.publications?.releases.find(r=>r.publicationId===metadata.publicationId);
+    if(!record||state.publications.currentPublicationId!==record.publicationId||!['local-committed','verified'].includes(record.status)||record.catalogSHA256!==metadata.catalogSHA256||record.catalogBytes!==metadata.catalogBytes)throw Error('unbound');
+    return {status:'registered',publicationId:metadata.publicationId,publicationState:record.status,verifiedAt:record.verifiedAt};
+  }catch{return {status:'unverified',publicationId:null};}
 }

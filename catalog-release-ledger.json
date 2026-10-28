@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "currentPublicationId": "ML-V4-261029.0",
+  "releases": [
+    {
+      "publicationId": "ML-V4-261029.0",
+      "catalogSchemaVersion": 4,
+      "catalogSHA256": "0cc733bbe0b2f9fc746a2f4cbd47cd14848a7fd581023490417b37c50897bf87",
+      "catalogBytes": 4861,
+      "snapshotPath": "/catalog/v4/releases/ML-V4-261029.0/plugins.json",
+      "publishedAt": "2026-10-28T20:08:13.978Z",
+      "metadataSHA256": "ce5a803d67d0c2cfdd022b696151d670c9136608bd5df549802768ab38f82a22",
+      "metadataBytes": 370,
+      "status": "local-committed",
+      "verifiedAt": null
+    }
+  ]
+}

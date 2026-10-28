@@ -5,7 +5,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { publicCatalogState } from './catalog-files.mjs';
 import { attachProjectState } from '../src/extension-copy.mjs';
-import { createProjectSnapshot } from './project-snapshot.mjs';
+import { createProjectSnapshot,withReviewedHistoricalFingerprint } from './project-snapshot.mjs';
 import { catalogSummary, catalogMetadata } from '../src/catalog-releases.mjs';
 
 const website = fileURLToPath(new URL('../', import.meta.url));
@@ -33,10 +33,8 @@ const framework = JSON.parse(await source('framework/package.json'));
 assert.match(framework.version, /^\d+\.\d+\.\d+$/u);
 const profiles = JSON.parse(await source('cli/profiles.json'));
 for (const file of ['README.md','framework/README.md','cli/README.md','docs/rivetin-naming.md','docs/portable-cli-validation.md','docs/ssh-channel.md','catalog/README.md','docs/0.2-validation.md']) await source(file);
-if (previous.historicalAcceptance) {
-  const record = evidence.find(item => item.path === previous.historicalAcceptance.reference);
-  assert.equal(record?.sha256, previous.historicalAcceptance.documentSHA256, 'Historical validation document changed; review its scope and fingerprint before syncing.');
-}
+const historyRecord=evidence.find(item=>item.path===previous.historicalAcceptance?.reference);
+const historyReview=withReviewedHistoricalFingerprint(previous,historyRecord?.sha256,option('--reviewed-history-sha256'));
 const extensions = [];
 for (const id of ids) {
   const manifest = JSON.parse(await source(`plugins/${id}/rivetin.json`));
@@ -63,7 +61,7 @@ for (const id of ids) {
   });
 }
 const snapshot = createProjectSnapshot({
-  previous, reviewedOn, frameworkVersion: framework.version,
+  previous:historyReview.previous, reviewedOn, frameworkVersion: framework.version,
   catalogPublication: catalogSummary(published),
   installerProfiles: profiles.map(profile => ({ image: profile.image, node: profile.node })),
   extensions,
@@ -77,5 +75,5 @@ if (args.includes('--check')) {
 }
 await writeFile(path.join(website,'src/project-state.json'),JSON.stringify(snapshot,null,2)+'\n');
 await mkdir(path.join(website,'.local/content-sync'),{recursive:true});
-await writeFile(path.join(website,'.local/content-sync/source-evidence.json'),JSON.stringify({ reviewedOn, files:evidence },null,2)+'\n');
+await writeFile(path.join(website,'.local/content-sync/source-evidence.json'),JSON.stringify({ reviewedOn, files:evidence, historicalFingerprintReview:{changed:historyReview.changed,previousSHA256:historyReview.previousSHA256,newSHA256:historyReview.newSHA256} },null,2)+'\n');
 console.log(`Synchronized ${extensions.length} source manifests; framework ${framework.version}; v4 ${snapshot.catalogPublication.v4}, historical v3 ${snapshot.catalogPublication.v3}, unique extensions ${snapshot.catalogPublication.uniqueExtensions}. Review copy if any source version changed.`);

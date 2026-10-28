@@ -36,3 +36,5 @@ html[lang=zh-CN] .feature h3,html[lang=zh-CN] .hero-side>p,html[lang=zh-CN] .sec
 
 /* Detail actions need more room than the compact homepage actions. */
 @media(max-width:600px){.extension-dialog .hero-actions{flex-direction:column;align-items:stretch;gap:16px}.extension-dialog .hero-actions .button,.extension-dialog .hero-actions .text-link{white-space:normal;overflow-wrap:anywhere}.dialog-content>code{overflow-wrap:anywhere}.extension-facts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.library-note>div{min-width:0}.library-note>div p+p{margin-top:6px}

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { publicCatalogState } from './catalog-files.mjs';
-import { catalogSummary, selectPluginReleases } from '../src/catalog-releases.mjs';
+import { catalogSummary, selectPluginReleases,catalogReleaseIdentity } from '../src/catalog-releases.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
 const files = (await readdir(root,{recursive:true})).filter(file => file.endsWith('.html')).map(file=>file.replaceAll('\\','/'));
@@ -16,6 +16,7 @@ const catalogState=await publicCatalogState(path.dirname(root));
 for(const record of catalogState.packages)assert.deepEqual(await readFile(path.join(root,record.path.slice(1))),await readFile(path.join(catalogState.publicRoot,record.path.slice(1))),'Deployed package bytes must equal reviewed source bytes');
 if(catalogState.catalog)assert.deepEqual(await readFile(path.join(root,'catalog/plugins.json')),catalogState.indexRaw,'Deployed index bytes must equal reviewed source bytes');
 if(catalogState.v4Raw)assert.deepEqual(await readFile(path.join(root,'catalog/v4/plugins.json')),catalogState.v4Raw,'Deployed v4 index bytes must equal reviewed source bytes');
+for(const name of catalogState.releaseFiles||[])assert.deepEqual(await readFile(path.join(root,name)),await readFile(path.join(catalogState.publicRoot,name)),'Release metadata/snapshot bytes must equal the source ledger binding');
 for (const [name, html] of documents) {
   const chinese=name.startsWith('zh/');
   assert.ok(html.includes(`<html lang="${chinese?'zh-CN':'en'}"`), `${name}: document language`);
@@ -55,6 +56,9 @@ for (const [name, html] of documents) {
 }
 const homepage = documents.get('index.html');
 const guide = documents.get('guide.html');
+const releaseIdentity=catalogReleaseIdentity(catalogState);
+if(releaseIdentity.status==='registered')assert.ok(homepage.includes(`<code data-catalog-release-id>${releaseIdentity.publicationId}</code>`),'Catalog ID must come from validated metadata/ledger');
+else assert.ok(homepage.includes('Catalog release ID: not registered.'),'Missing identity must not be fabricated from schema or plugin versions');
 assert.deepEqual([...documents.keys()].sort(),['404.html','guide.html','index.html']);
 for (const [page,html] of documents) {
   assert.ok(html.includes('type="button" class="language-link" data-language-switch'),page+': in-page language control');

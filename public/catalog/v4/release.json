@@ -1,0 +1,10 @@
+{
+  "metadataSchemaVersion": 1,
+  "publicationId": "ML-V4-261029.0",
+  "catalogSchemaVersion": 4,
+  "catalogPath": "/catalog/v4/plugins.json",
+  "catalogSHA256": "0cc733bbe0b2f9fc746a2f4cbd47cd14848a7fd581023490417b37c50897bf87",
+  "catalogBytes": 4861,
+  "snapshotPath": "/catalog/v4/releases/ML-V4-261029.0/plugins.json",
+  "publishedAt": "2026-10-28T20:08:13.978Z"
+}

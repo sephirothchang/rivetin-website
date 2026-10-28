@@ -5,6 +5,7 @@ import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { INDEX_PATH, MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, MAX_TOTAL_BYTES, exact, fail, sha256, validHash, packagePath, parsePackagePath, parseJson, validateCatalog, validatePackage, validateTransition } from './catalog-contract.mjs';
 import { V4_INDEX_PATH, validateV4Catalog, validateV4Package } from './catalog-v4-contract.mjs';
+import { RELEASE_PATH, RELEASE_LEDGER, MAX_RELEASE_BYTES, MAX_RELEASE_LEDGER_BYTES, releaseLedger, validateRelease, emptyReleaseLedger, snapshotMetadata } from './catalog-release-contract.mjs';
 
 const LEDGER='catalog-integrity.json';
 export async function optionalStat(file){try{return await lstat(file);}catch(error){if(error.code==='ENOENT')return null;throw error;}}
@@ -55,6 +56,27 @@ export function ledger(value){
   }
   if(total>MAX_TOTAL_BYTES)fail('CATALOG_SITE_SIZE_LIMIT');return value;
 }
+async function releaseState(siteRoot,publicRoot,files,v4Raw){
+  const releaseLedgerRaw=await optionalBytes(siteRoot,RELEASE_LEDGER,MAX_RELEASE_LEDGER_BYTES),publications=releaseLedgerRaw?releaseLedger(parseJson(releaseLedgerRaw,MAX_RELEASE_LEDGER_BYTES)):emptyReleaseLedger();
+  if(publications.releases.some(r=>r.status==='reserved'))fail('CATALOG_RELEASE_OUTCOME_UNKNOWN');
+  const releaseFiles=[];
+  for(const record of publications.releases.filter(r=>r.status!=='abandoned')){
+    const index=await boundedFile(publicRoot,record.snapshotPath.slice(1),MAX_INDEX_BYTES),metaPath=snapshotMetadata(record.publicationId),raw=await boundedFile(publicRoot,metaPath.slice(1),MAX_RELEASE_BYTES);
+    const meta=validateRelease(parseJson(raw,MAX_RELEASE_BYTES),index);
+    if(meta.publicationId!==record.publicationId||sha256(raw)!==record.metadataSHA256||raw.length!==record.metadataBytes||meta.catalogSHA256!==record.catalogSHA256||meta.catalogBytes!==record.catalogBytes||meta.publishedAt!==record.publishedAt)fail('CATALOG_RELEASE_LEDGER_BINDING');
+    releaseFiles.push(record.snapshotPath.slice(1),metaPath.slice(1));
+  }
+  const releaseRaw=files.includes(RELEASE_PATH.slice(1))?await boundedFile(publicRoot,RELEASE_PATH.slice(1),MAX_RELEASE_BYTES):null;
+  let releaseMetadata=null;
+  if(publications.currentPublicationId!==null){
+    if(!releaseRaw||!v4Raw)fail('CATALOG_RELEASE_CURRENT_MISSING');
+    releaseMetadata=validateRelease(parseJson(releaseRaw,MAX_RELEASE_BYTES),v4Raw);
+    const current=publications.releases.find(r=>r.publicationId===publications.currentPublicationId);
+    if(releaseMetadata.publicationId!==current.publicationId||sha256(releaseRaw)!==current.metadataSHA256||releaseRaw.length!==current.metadataBytes||!releaseRaw.equals(await boundedFile(publicRoot,snapshotMetadata(current.publicationId).slice(1),MAX_RELEASE_BYTES)))fail('CATALOG_RELEASE_CURRENT_MISMATCH');
+    releaseFiles.push(RELEASE_PATH.slice(1));
+  }else if(releaseRaw)fail('CATALOG_RELEASE_LEDGER_MISSING');
+  return {releaseLedgerRaw,publications,releaseRaw,releaseMetadata,releaseFiles};
+}
 export async function publicCatalogState(siteRoot,{allowLocked=false}={}){
   if(!allowLocked&&await optionalStat(path.join(siteRoot,'.local','catalog-import.lock')))fail('CATALOG_IMPORT_LOCKED');
   const publicRoot=path.join(siteRoot,'public'),info=await optionalStat(publicRoot);
@@ -67,7 +89,8 @@ export async function publicCatalogState(siteRoot,{allowLocked=false}={}){
   const catalog=validateCatalog(parseJson(indexRaw,MAX_INDEX_BYTES)),packages=ledger(parseJson(ledgerRaw,MAX_INDEX_BYTES)).packages;
   const v4Raw=files.includes(V4_INDEX_PATH.slice(1))?await boundedFile(publicRoot,V4_INDEX_PATH.slice(1),MAX_INDEX_BYTES):null;
   const v4Catalog=v4Raw?validateV4Catalog(parseJson(v4Raw,MAX_INDEX_BYTES)):null;
-  const expected=new Set([INDEX_PATH.slice(1),...(v4Raw?[V4_INDEX_PATH.slice(1)]:[]),...packages.map(item=>item.path.slice(1))]);
+  const publication=await releaseState(siteRoot,publicRoot,files,v4Raw);
+  const expected=new Set([INDEX_PATH.slice(1),...(v4Raw?[V4_INDEX_PATH.slice(1)]:[]),...packages.map(item=>item.path.slice(1)),...publication.releaseFiles]);
   if(files.length!==expected.size||files.some(file=>!expected.has(file)))fail('CATALOG_PUBLIC_FILE_UNREGISTERED');
   for(const record of packages){
     const raw=await boundedFile(publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES),identity=parsePackagePath(record.path);
@@ -79,7 +102,7 @@ export async function publicCatalogState(siteRoot,{allowLocked=false}={}){
   }
   for(const item of catalog.plugins.filter(item=>item.status==='published'))if(!packages.some(record=>record.path===item.downloadPath&&record.sha256===item.sha256))fail('CATALOG_PUBLISHED_FILE_MISSING');
   for(const item of v4Catalog?.plugins.filter(item=>item.status==='published')??[])if(!packages.some(record=>record.path===item.downloadPath&&record.sha256===item.sha256))fail('CATALOG_PUBLISHED_FILE_MISSING');
-  return {catalog,indexRaw,v4Catalog,v4Raw,ledgerRaw,packages,publicRoot};
+  return {catalog,indexRaw,v4Catalog,v4Raw,ledgerRaw,packages,publicRoot,...publication};
 }
 export async function frozenDrop(dropRoot,expectedStageHash){
   if(!path.isAbsolute(dropRoot)||!validHash(expectedStageHash))fail('CATALOG_FROZEN_INPUT_REQUIRED');
@@ -106,11 +129,12 @@ export async function exclusive(root,name,raw){
   await ensureParents(root,name);const target=await safePath(root,name,{missing:true}),handle=await open(target,'wx',0o644);
   try{await handle.writeFile(raw);await handle.sync();}finally{await handle.close();}
 }
-export async function replace(root,name,raw,expected){
-  await ensureParents(root,name);const existing=await optionalBytes(root,name,MAX_INDEX_BYTES);
+export async function replace(root,name,raw,expected,max=MAX_INDEX_BYTES){
+  if(!Number.isSafeInteger(max)||max<1||raw.length>max)fail('CATALOG_SIZE_LIMIT');
+  await ensureParents(root,name);const existing=await optionalBytes(root,name,max);
   if(!isDeepStrictEqual(existing,expected))fail('CATALOG_TARGET_CHANGED');
   const temporary=`${name}.${randomUUID()}.tmp`;
-  try{await exclusive(root,temporary,raw);if(!isDeepStrictEqual(await optionalBytes(root,name,MAX_INDEX_BYTES),expected))fail('CATALOG_TARGET_CHANGED');await rename(path.join(root,temporary),path.join(root,name));}
+  try{await exclusive(root,temporary,raw);if(!isDeepStrictEqual(await optionalBytes(root,name,max),expected))fail('CATALOG_TARGET_CHANGED');await rename(path.join(root,temporary),path.join(root,name));}
   finally{await unlink(path.join(root,temporary)).catch(error=>{if(error.code!=='ENOENT')throw error;});}
 }
 export async function importCatalog({siteRoot,dropRoot,stageHash,check=false}){
@@ -146,9 +170,9 @@ export async function importCatalog({siteRoot,dropRoot,stageHash,check=false}){
     throw error;
   }finally{await lock.close();await unlink(path.join(siteRoot,'.local','catalog-import.lock'));}
 }
-export async function copyPublicCatalog(siteRoot,distRoot){
+export async function copyPublicCatalog(siteRoot,distRoot,{omitCurrentRelease=false}={}){
   const state=await publicCatalogState(siteRoot);
-  const expected=new Set(state.catalog?[INDEX_PATH.slice(1),...(state.v4Raw?[V4_INDEX_PATH.slice(1)]:[]),...state.packages.map(record=>record.path.slice(1))]:[]);
+  const expected=new Set(state.catalog?[INDEX_PATH.slice(1),...(state.v4Raw?[V4_INDEX_PATH.slice(1)]:[]),...state.packages.map(record=>record.path.slice(1)),...state.releaseFiles.filter(name=>!omitCurrentRelease||name!==RELEASE_PATH.slice(1))]:[]);
   for(const dir of ['catalog','downloads'])if(await optionalStat(path.join(distRoot,dir)))for(const file of await treeFiles(path.join(distRoot,dir)))if(!expected.has(`${dir}/${file}`))fail('CATALOG_DIST_FILE_UNREGISTERED');
   if(!state.catalog)return state;
   for(const name of expected){
@@ -161,6 +185,6 @@ export async function copyPublicCatalog(siteRoot,distRoot){
     await writeFile(target,raw);
   }
   const after=await publicCatalogState(siteRoot);
-  if(!isDeepStrictEqual(after.indexRaw,state.indexRaw)||!isDeepStrictEqual(after.v4Raw,state.v4Raw)||!isDeepStrictEqual(after.ledgerRaw,state.ledgerRaw))fail('CATALOG_INPUT_CHANGED');
+  if(!isDeepStrictEqual(after.indexRaw,state.indexRaw)||!isDeepStrictEqual(after.v4Raw,state.v4Raw)||!isDeepStrictEqual(after.ledgerRaw,state.ledgerRaw)||!isDeepStrictEqual(after.releaseLedgerRaw,state.releaseLedgerRaw)||!isDeepStrictEqual(after.releaseRaw,state.releaseRaw))fail('CATALOG_INPUT_CHANGED');
   return state;
 }
