@@ -8,7 +8,7 @@ let languageDictionary;
 let translationEntries;
 
 function loadLanguageDictionary() {
-  if (!languageDictionary) languageDictionary=fetch(new URL('assets/zh-CN.json',document.baseURI),{credentials:'omit',cache:'no-cache'})
+  if (!languageDictionary) languageDictionary=fetch(new URL(languageLink?.dataset.translations||'assets/zh-CN.json',document.baseURI),{credentials:'omit',cache:'no-cache'})
     .then(response=>{if(!response.ok)throw new Error('Language unavailable');return response.json();})
     .catch(error=>{languageDictionary=undefined;throw error;});
   return languageDictionary;
