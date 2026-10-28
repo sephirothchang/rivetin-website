@@ -18,9 +18,19 @@
   <a href="https://github.com/sephirothchang/rivetin"><strong>Main project</strong></a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/sephirothchang/rivetin-website/actions/workflows/deploy-pages.yml"><img src="https://github.com/sephirothchang/rivetin-website/actions/workflows/deploy-pages.yml/badge.svg?branch=main" alt="Website deployment status"></a>
+  <img src="https://img.shields.io/badge/CloudTower-4.9.0-536d82?style=flat-square" alt="Declared CloudTower version: 4.9.0">
+  <img src="https://img.shields.io/badge/Framework_API-1-536d82?style=flat-square" alt="Framework API: 1">
+</p>
+
 ---
 
+## About
+
 This repository contains the bilingual Rivetin website and its public plugin catalog. The [main project](https://github.com/sephirothchang/rivetin) contains the framework and extensions; repository access is currently required.
+
+Explore the [extensions](#extensions) or check the [compatibility](#compatibility) before getting started.
 
 ## Extensions
 
