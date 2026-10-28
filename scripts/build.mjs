@@ -2,6 +2,7 @@ import { mkdir, copyFile, writeFile, cp, unlink, readFile } from 'node:fs/promis
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { copyPublicCatalog } from './catalog-files.mjs';
 const production = process.argv.includes('--production');
 process.env.RIVETIN_SITE_MODE = production ? 'production' : 'preview';
 const { pages: englishPages } = await import('../src/site-v2.mjs');
@@ -29,6 +30,7 @@ for (const [source, name] of [['styles-v2.css', 'styles.css'], ['site-v2.js', 's
 await cp(path.join(root, 'src', 'fonts'), path.join(root, 'dist', 'assets', 'fonts'), { recursive: true });
 await writeFile(path.join(root,'dist','assets','zh-CN.json'),languageJson);
 await writeFile(path.join(root, 'dist', '.nojekyll'), '');
+await copyPublicCatalog(root,path.join(root,'dist'));
 await writeFile(path.join(root, 'dist', 'robots.txt'), production ? 'User-agent: *\nAllow: /\nSitemap: https://rivetin.dev/sitemap.xml\n' : 'User-agent: *\nDisallow: /\n');
 await writeFile(path.join(root, 'dist', 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${['','guide.html'].map(page=>`<url><loc>https://rivetin.dev/${page}</loc></url>`).join('')}</urlset>\n`);
 for (const page of ['index.html','guide.html','404.html']) {

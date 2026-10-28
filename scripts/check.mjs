@@ -2,6 +2,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+import { publicCatalogState } from './catalog-files.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
 const files = (await readdir(root,{recursive:true})).filter(file => file.endsWith('.html')).map(file=>file.replaceAll('\\','/'));
@@ -10,6 +11,9 @@ const project = JSON.parse(await readFile(new URL('../src/project-state.json',im
 const { extensionCopy } = await import('../src/extension-copy.mjs');
 let checkedLinks = 0;
 const production = process.argv.includes('--production');
+const catalogState=await publicCatalogState(path.dirname(root));
+for(const record of catalogState.packages)assert.deepEqual(await readFile(path.join(root,record.path.slice(1))),await readFile(path.join(catalogState.publicRoot,record.path.slice(1))),'Deployed package bytes must equal reviewed source bytes');
+if(catalogState.catalog)assert.deepEqual(await readFile(path.join(root,'catalog/plugins.json')),catalogState.indexRaw,'Deployed index bytes must equal reviewed source bytes');
 for (const [name, html] of documents) {
   const chinese=name.startsWith('zh/');
   assert.ok(html.includes(`<html lang="${chinese?'zh-CN':'en'}"`), `${name}: document language`);
@@ -43,7 +47,7 @@ for (const [name, html] of documents) {
   if (name === 'index.html') {
     assert.equal((html.match(/class="extension-row"/gu) || []).length, 6, `${name}: extension catalog`);
     assert.equal((html.match(/<dialog /gu) || []).length, 6, `${name}: extension details`);
-    assert.match(html, /Public installation packages are not available yet/u, `${name}: release status`);
+    assert.match(html, /Framework installers remain unavailable/u, `${name}: framework release status`);
     assert.match(html, /Not affiliated with or endorsed by SmartX/u, `${name}: project attribution`);
   }
 }
@@ -69,7 +73,7 @@ if (production) {
   assert.ok(guide.includes('<link rel="canonical" href="https://rivetin.dev/guide.html">'));
   assert.ok(documents.get('404.html').includes('<base href="/">'),'Nested missing routes must resolve error-page assets from the site root');
 }
-assert.equal(project.catalogPublishedCount,0,'Reassess release availability before publishing catalog entries.');
+assert.ok(guide.includes(`The current catalog has ${catalogState.catalog?.plugins.filter(item=>item.status==='published').length??0} published entries`),'Public availability must come from the validated website catalog.');
 for(const extension of project.extensions) {
   assert.ok(homepage.includes(extension.id),`${extension.id}: missing detail identity`);
   assert.ok(homepage.includes(`v${extension.version} · Source`),`${extension.id}: stale homepage source version`);

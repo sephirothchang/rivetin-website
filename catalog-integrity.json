@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "packages": [
+    {
+      "path": "/downloads/plugins/rivetin-disk-smart-info/0.1.3/rivetin-disk-smart-info-0.1.3.rivetin.json",
+      "sha256": "b54df579f28d619890dd76ef12cd4e5605517b2d7a595763ec204802d29bf240",
+      "bytes": 88301
+    },
+    {
+      "path": "/downloads/plugins/rivetin-ipmi-redirection/0.1.2/rivetin-ipmi-redirection-0.1.2.rivetin.json",
+      "sha256": "70f64ae99569e540d664a553102f1960e62768ed8ac29b952b5ae5987daf1683",
+      "bytes": 79060
+    },
+    {
+      "path": "/downloads/plugins/rivetin-ssh-channel/0.1.1/rivetin-ssh-channel-0.1.1.rivetin.json",
+      "sha256": "2d5b5e66bc29393b48e7b2f6dcb0a704264f4773ebc3ca456bfd8fdbde15be6d",
+      "bytes": 13245
+    }
+  ]
+}
