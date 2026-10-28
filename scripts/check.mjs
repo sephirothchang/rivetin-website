@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { publicCatalogState } from './catalog-files.mjs';
+import { catalogSummary, selectPluginReleases } from '../src/catalog-releases.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
 const files = (await readdir(root,{recursive:true})).filter(file => file.endsWith('.html')).map(file=>file.replaceAll('\\','/'));
@@ -74,7 +75,21 @@ if (production) {
   assert.ok(guide.includes('<link rel="canonical" href="https://rivetin.dev/guide.html">'));
   assert.ok(documents.get('404.html').includes('<base href="/">'),'Nested missing routes must resolve error-page assets from the site root');
 }
-assert.ok(guide.includes(`The current catalog has ${catalogState.catalog?.plugins.filter(item=>item.status==='published').length??0} published entries`),'Public availability must come from the validated website catalog.');
+const summary=catalogSummary(catalogState);
+for(const html of [homepage,guide]) {
+  assert.ok(html.includes(`<code data-catalog-v4-count>${summary.v4}</code>`),'v4 count must come from the validated catalog');
+  assert.ok(html.includes(`<code data-catalog-v3-count>${summary.v3}</code>`),'v3 count must remain separate');
+}
+for(const extension of project.extensions) {
+  const copy=extensionCopy.find(item=>item.id===extension.id);
+  const dialog=homepage.match(new RegExp(`<dialog[^>]*id="detail-${copy.key}"[\\s\\S]*?</dialog>`,'u'))?.[0];
+  assert.ok(dialog);
+  const selected=selectPluginReleases(extension.id,catalogState,project.frameworkVersion);
+  assert.equal(dialog.includes('data-current-download'),Boolean(selected.release),extension.id+': primary download must be eligible v4');
+  if(selected.release)assert.ok(dialog.includes(`href="${selected.release.downloadPath}"`));
+  assert.equal(dialog.includes('data-legacy-download'),Boolean(selected.legacyRelease));
+  if(selected.legacyRelease)assert.ok(dialog.includes(`href="${selected.legacyRelease.downloadPath}"`));
+}
 for(const extension of project.extensions) {
   assert.ok(homepage.includes(extension.id),`${extension.id}: missing detail identity`);
   assert.ok(homepage.includes(`v${extension.version} · Source`),`${extension.id}: stale homepage source version`);
@@ -87,7 +102,15 @@ assert.ok(guide.includes('data-cli-executable=".\\rivetin-windows-amd64.exe"'),'
 assert.ok(guide.includes('data-cli-executable="./rivetin-darwin-arm64"'),'Missing macOS executable example');
 assert.ok(guide.includes('data-cli-executable="./rivetin-linux-amd64"'),'Missing Linux executable example');
 assert.ok(guide.includes('--ssh-hostkey SHA256:&lt;VERIFIED_HOST_KEY&gt;'),'Missing explicit host trust in command examples');
-assert.equal(project.liveRivetinAcceptance,'development-test-accepted');
+assert.equal(project.schemaVersion,2);
+assert.equal(project.candidateRelease.currentDeployment,'unverified');
+assert.equal(project.candidateRelease.status,'not-admitted');
+assert.equal(project.historicalAcceptance.reference,'docs/0.2-validation.md');
+assert.ok(guide.includes(`Historical ${project.historicalAcceptance.frameworkVersion} validation scope`));
+assert.ok(guide.includes('href="/catalog/v4/plugins.json"'));
+assert.ok(guide.includes('href="/catalog/plugins.json"'));
+assert.doesNotMatch(guide,/Rivetin 0\.1\.4 has completed/u);
+assert.doesNotMatch(homepage,/Dev\/test enabled|Live UI · no samples/u);
 assert.ok(guide.includes('CloudTower 4.9.0 development/test environment only'),'Current acceptance scope must remain explicit');
 assert.ok(guide.includes('not a production or all-version guarantee'),'Acceptance must not imply general production support');
 assert.doesNotMatch(guide,/live Rivetin installation acceptance: pending|has not completed live acceptance/iu,'Stale installation acceptance');

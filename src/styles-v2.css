@@ -33,3 +33,6 @@ html[lang=zh-CN] .feature h3,html[lang=zh-CN] .hero-side>p,html[lang=zh-CN] .sec
 @media(max-width:600px){.language-link{margin-left:auto;margin-right:20px;border:0;padding:10px 0}html[lang=zh-CN] .hero h2{font-size:clamp(24px,6.7vw,38px)}html[lang=zh-CN] .feature h3{font-size:18px}}
 
 @font-face{font-family:'Rivetin Sans SC';font-style:normal;font-weight:400 700;font-display:swap;src:url('fonts/noto-sans-sc-subset.woff2') format('woff2');unicode-range:U+3000-303F,U+4E00-9FFF,U+FF00-FFEF}
+
+/* Detail actions need more room than the compact homepage actions. */
+@media(max-width:600px){.extension-dialog .hero-actions{flex-direction:column;align-items:stretch;gap:16px}.extension-dialog .hero-actions .button,.extension-dialog .hero-actions .text-link{white-space:normal;overflow-wrap:anywhere}.dialog-content>code{overflow-wrap:anywhere}.extension-facts{grid-template-columns:repeat(3,minmax(0,1fr))}}

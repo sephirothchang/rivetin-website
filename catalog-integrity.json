@@ -12,6 +12,11 @@
       "bytes": 79060
     },
     {
+      "path": "/downloads/plugins/rivetin-ipmi-redirection/0.1.4/rivetin-ipmi-redirection-0.1.4.rivetin.json",
+      "sha256": "7472699d221f06c417547bddf5b7e0c334193390e5adc3bd9ecced62d13e80da",
+      "bytes": 83476
+    },
+    {
       "path": "/downloads/plugins/rivetin-ssh-channel/0.1.1/rivetin-ssh-channel-0.1.1.rivetin.json",
       "sha256": "2d5b5e66bc29393b48e7b2f6dcb0a704264f4773ebc3ca456bfd8fdbde15be6d",
       "bytes": 13245

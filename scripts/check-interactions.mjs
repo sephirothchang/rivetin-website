@@ -8,7 +8,7 @@ import { attachProjectState } from '../src/extension-copy.mjs';
 // Optional offline QA reuses the adjacent project's installed jsdom. It does not
 // load URLs, fetch resources, launch a browser, or access the system clipboard.
 const root = path.resolve(fileURLToPath(new URL('../',import.meta.url)));
-const require = createRequire(path.join(root,'../smartx-extensions/framework/package.json'));
+const require = createRequire(path.join(root,'../rivetin/framework/package.json'));
 const { JSDOM } = require('jsdom');
 const script = await readFile(path.join(root,'dist/assets/site.js'),'utf8');
 const passed = [];
