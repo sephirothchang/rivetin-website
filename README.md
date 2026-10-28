@@ -1,20 +1,47 @@
-# Rivetin website
+<p align="center">
+  <img src="src/mark.svg" alt="Rivetin logo" width="64" height="64">
+</p>
 
-The bilingual website for Rivetin, an independent extension platform for CloudTower.
+<h1 align="center">Rivetin</h1>
 
-[Visit rivetin.dev](https://rivetin.dev/)
+<p align="center">
+  Small extensions. A better CloudTower.
+  <br>
+  An independent extension platform for the tools you use every day.
+</p>
 
-The [Rivetin project](https://github.com/sephirothchang/rivetin) contains the framework and extensions; repository access is currently required.
+<p align="center">
+  <a href="https://rivetin.dev/"><strong>Website</strong></a>
+  &nbsp; · &nbsp;
+  <a href="https://rivetin.dev/guide.html"><strong>Documentation</strong></a>
+  &nbsp; · &nbsp;
+  <a href="https://github.com/sephirothchang/rivetin"><strong>Main project</strong></a>
+</p>
 
-The following is the reviewed website and catalog snapshot as of October 28, 2026.
+---
 
-| Extension | Version | Availability | Declared compatibility |
-| --- | --- | --- | --- |
-| IPMI Redirection | 0.1.2 | Published | CloudTower 4.9.0; framework API 1 |
-| SSH Channel | 0.1.1 | Published | CloudTower 4.9.0; framework API 1; requires the SSH channel broker |
-| Disk SMART | 0.1.3 | Published | CloudTower 4.9.0; framework API 1; Rivetin 0.1.2 or later |
-| Context Menu | 0.4.2 | Catalog draft | CloudTower 4.9.0 candidate; live validation pending |
-| Network Topology | 0.1.0 | Local demo | No accepted CloudTower build |
-| Policy Converter | 0.1.0 | Offline preview | No accepted CloudTower build |
+This repository contains the bilingual Rivetin website and its public plugin catalog. The [main project](https://github.com/sephirothchang/rivetin) contains the framework and extensions; repository access is currently required.
 
-The [plugin catalog](https://rivetin.dev/catalog/plugins.json) is the source of truth for published packages, versions, checksums and declared compatibility. CloudTower 4.9.0 is the declared version, not a guarantee for every build or production environment. Live host SMART collection remains unverified. Framework installers are not publicly available.
+## Extensions
+
+Three plugin packages are available in the [catalog](https://rivetin.dev/catalog/plugins.json):
+
+| Extension | Version | What it adds |
+| :--- | :--- | :--- |
+| [IPMI Redirection](https://rivetin.dev/#extension-ipmi) | `0.1.2` | Host BMC access and vendor protocol settings |
+| [SSH Channel](https://rivetin.dev/#extension-ssh) | `0.1.1` | Shared, controlled collection and approvals |
+| [Disk SMART](https://rivetin.dev/#extension-smart) | `0.1.3` | Physical disk SMART information and history |
+
+**In development**
+
+| Extension | Version | Status |
+| :--- | :--- | :--- |
+| [Context Menu](https://rivetin.dev/#extension-context) | `0.4.2` | Catalog draft; CloudTower 4.9.0 candidate, live validation pending |
+| [Network Topology](https://rivetin.dev/#extension-topology) | `0.1.0` | Local demo; no accepted CloudTower build |
+| [Policy Converter](https://rivetin.dev/#extension-converter) | `0.1.0` | Offline preview; no accepted CloudTower build |
+
+## Compatibility
+
+Published packages declare **CloudTower 4.9.0** and **framework API 1**. Disk SMART requires Rivetin **0.1.2 or later**; SSH Channel requires its framework broker and host-specific validation. A declared version does not guarantee support for every build or production environment. Live host SMART collection remains unverified.
+
+The [plugin catalog](https://rivetin.dev/catalog/plugins.json) is the source of truth for published versions, checksums and compatibility declarations. Framework installers are not publicly available. This overview reflects the reviewed website and catalog snapshot of October 28, 2026.
