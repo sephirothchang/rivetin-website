@@ -91,7 +91,13 @@ for (const match of fontCss.matchAll(/url\(([^)]+)\)/gu)) {
   assert.ok(!match[1].includes('/'), 'Fonts must be local files');
   assert.ok((await stat(path.join(root,'assets','fonts',match[1]))).isFile(), `Missing font ${match[1]}`);
 }
-for (const file of ['dm-sans-OFL.txt','dm-mono-OFL.txt']) {
+for (const file of ['dm-sans-OFL.txt','dm-mono-OFL.txt','noto-sans-sc-OFL.txt']) {
   assert.match(await readFile(path.join(root,'assets','fonts',file),'utf8'),/SIL OPEN FONT LICENSE/u);
 }
+const chineseGlyphs=await readFile(path.join(root,'assets/fonts/noto-sans-sc-characters.txt'),'utf8');
+for (const source of ['src/zh-CN.mjs','src/site-v2.js']) {
+  const text=await readFile(new URL(`../${source}`,import.meta.url),'utf8');
+  for (const character of text.match(/[\p{Script=Han}\u3000-\u303f\uff00-\uffef]/gu)||[]) assert.ok(chineseGlyphs.includes(character),`Update Chinese font subset for ${character} with scripts/subset-chinese-font.ps1`);
+}
+assert.equal((await readFile(path.join(root,'assets/fonts/noto-sans-sc-subset.woff2'))).subarray(0,4).toString(),'wOF2');
 console.log(`PASS: ${files.length} pages; ${checkedLinks} local references; unique IDs, preview guards, catalog and content checks.`);
