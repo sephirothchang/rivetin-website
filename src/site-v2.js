@@ -1,3 +1,13 @@
+const chinese = document.documentElement.lang === 'zh-CN';
+const ui = chinese ? {open:'打开导航',close:'关闭导航',copy:'复制',copied:'已复制',select:'选择代码'} : {open:'Open navigation',close:'Close navigation',copy:'Copy',copied:'Copied',select:'Select code'};
+const languageLink=document.querySelector('[data-language-switch]');
+if(languageLink){
+  const target=new URL(languageLink.getAttribute('href'),document.baseURI);
+  const updateLanguageHash=()=>{target.hash=location.hash;languageLink.href=target.href;};
+  updateLanguageHash();
+  window.addEventListener('hashchange',updateLanguageHash);
+}
+
 const dropdownButton = document.querySelector('.nav-trigger');
 const dropdown = document.querySelector('.nav-popover');
 const mobileButton = document.querySelector('.mobile-toggle');
@@ -9,7 +19,7 @@ function closeDropdown() {
 }
 function closeMobile() {
   mobileButton?.setAttribute('aria-expanded','false');
-  mobileButton?.setAttribute('aria-label','Open navigation');
+  mobileButton?.setAttribute('aria-label',ui.open);
   if(mobileMenu) mobileMenu.hidden = true;
 }
 dropdownButton?.addEventListener('click',()=>{
@@ -20,7 +30,7 @@ dropdownButton?.addEventListener('click',()=>{
 mobileButton?.addEventListener('click',()=>{
   const open = mobileButton.getAttribute('aria-expanded') !== 'true';
   mobileButton.setAttribute('aria-expanded',String(open));
-  mobileButton.setAttribute('aria-label',open?'Close navigation':'Open navigation');
+  mobileButton.setAttribute('aria-label',open?ui.close:ui.open);
   mobileMenu.hidden = !open;
 });
 dropdown?.querySelectorAll('a').forEach(link=>link.addEventListener('click',closeDropdown));
@@ -51,7 +61,7 @@ document.querySelectorAll('[data-filter]').forEach(button=>{
       row.hidden = button.dataset.filter!=='all' && row.dataset.category!==button.dataset.filter;
       if(!row.hidden) count++;
     });
-    document.querySelector('.result-count').textContent = `${count} extension${count===1?'':'s'}`;
+    document.querySelector('.result-count').textContent = chinese?`${count} 个扩展`:`${count} extension${count===1?'':'s'}`;
   });
 });
 
@@ -102,15 +112,15 @@ document.querySelectorAll('.copy-code').forEach(button=>{
     const code=button.closest('.code-block').querySelector('code');
     try {
       await navigator.clipboard.writeText(code.textContent);
-      button.textContent='Copied';
+      button.textContent=ui.copied;
     } catch {
-      button.textContent='Select code';
+      button.textContent=ui.select;
       const selection=window.getSelection();
       const range=document.createRange();
       range.selectNodeContents(code);
       selection.removeAllRanges();
       selection.addRange(range);
     }
-    window.setTimeout(()=>{button.textContent='Copy';},2000);
+    window.setTimeout(()=>{button.textContent=ui.copy;},2000);
   });
 });

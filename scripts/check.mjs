@@ -4,17 +4,20 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 
 const root = path.resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
-const files = (await readdir(root)).filter(file => file.endsWith('.html'));
+const files = (await readdir(root,{recursive:true})).filter(file => file.endsWith('.html')).map(file=>file.replaceAll('\\','/'));
 const documents = new Map(await Promise.all(files.map(async name => [name, await readFile(path.join(root, name), 'utf8')])));
 const project = JSON.parse(await readFile(new URL('../src/project-state.json',import.meta.url),'utf8'));
+const { extensionCopy } = await import('../src/extension-copy.mjs');
 let checkedLinks = 0;
 const production = process.argv.includes('--production');
 for (const [name, html] of documents) {
-  assert.match(html, /<html lang="en"/u, `${name}: document language`);
-  assert.doesNotMatch(html, /\p{Script=Han}/u, `${name}: English-only website`);
+  const chinese=name.startsWith('zh/');
+  assert.ok(html.includes(`<html lang="${chinese?'zh-CN':'en'}"`), `${name}: document language`);
+  if (!chinese) assert.doesNotMatch(html.replace(/<a[^>]*data-language-switch[^>]*>[\s\S]*?<\/a>/gu,''), /\p{Script=Han}/u, `${name}: English content`);
+  else assert.match(html,/\p{Script=Han}/u,`${name}: Chinese content`);
   assert.doesNotMatch(html, /https:\/\/github\.com\/sephirothchang\/smartx-extensions/u, `${name}: stale repository URL`);
   assert.match(html, /<meta name="viewport"/u, `${name}: responsive viewport`);
-  assert.match(html, new RegExp(`<meta name="robots" content="${production && name !== '404.html' ? 'index,follow' : 'noindex,nofollow'}"`,'u'), `${name}: indexing mode`);
+  assert.match(html, new RegExp(`<meta name="robots" content="${production && !name.endsWith('404.html') ? 'index,follow' : 'noindex,nofollow'}"`,'u'), `${name}: indexing mode`);
   assert.equal((html.match(/<h1(?:\s|>)/gu) || []).length, 1, `${name}: one primary heading`);
   const ids = [...html.matchAll(/\sid="([^"]+)"/gu)].map(match => match[1]);
   assert.equal(new Set(ids).size, ids.length, `${name}: duplicate IDs`);
@@ -25,7 +28,8 @@ for (const [name, html] of documents) {
       continue;
     }
     const url = new URL(value, `https://preview.invalid/${name}`);
-    const filename = decodeURIComponent(url.pathname.slice(1)) || 'index.html';
+    const pathname = decodeURIComponent(url.pathname.slice(1));
+    const filename = !pathname || pathname.endsWith('/') ? `${pathname}index.html` : pathname;
     const target = path.resolve(root, filename);
     assert.ok(target.startsWith(root + path.sep), `${name}: out-of-root path`);
     assert.ok((await stat(target)).isFile(), `${name}: missing ${filename}`);
@@ -45,6 +49,19 @@ for (const [name, html] of documents) {
 }
 const homepage = documents.get('index.html');
 const guide = documents.get('guide.html');
+assert.deepEqual([...documents.keys()].sort(),['404.html','guide.html','index.html','zh/404.html','zh/guide.html','zh/index.html']);
+for (const page of ['index.html','guide.html','404.html']) {
+  const en=documents.get(page),zh=documents.get(`zh/${page}`);
+  assert.ok(en.includes(`data-language-switch href="zh/${page}"`),`${page}: Chinese switch route`);
+  assert.ok(zh.includes(`data-language-switch href="../${page}"`),`${page}: English switch route`);
+  assert.deepEqual([...en.matchAll(/<code\b[^>]*>([\s\S]*?)<\/code>/gu)].map(m=>m[1]),[...zh.matchAll(/<code\b[^>]*>([\s\S]*?)<\/code>/gu)].map(m=>m[1]),`${page}: translation must preserve commands and identifiers`);
+  for (const locale of ['en','zh-CN']) assert.ok(zh.includes(`hreflang="${locale}"`),`${page}: alternate language discovery`);
+}
+for (const copy of extensionCopy) {
+  const row=homepage.match(new RegExp(`<article class="extension-row" id="extension-${copy.key}"[\\s\\S]*?</article>`,'u'))?.[0];
+  assert.ok(row?.includes(`class="badge enhancement-badge">${copy.enhancement}</span>`),`${copy.id}: functional area badge`);
+  assert.ok(!row.includes(copy.status),`${copy.id}: development status belongs in details`);
+}
 assert.equal(await readFile(path.join(root,'robots.txt'),'utf8'), production ? 'User-agent: *\nAllow: /\nSitemap: https://rivetin.dev/sitemap.xml\n' : 'User-agent: *\nDisallow: /\n');
 if (production) {
   assert.ok(homepage.includes('<link rel="canonical" href="https://rivetin.dev/">'));

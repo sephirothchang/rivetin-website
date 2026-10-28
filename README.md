@@ -1,5 +1,5 @@
 # Rivetin website
 
-The website for Rivetin, an independent extension platform for CloudTower.
+The bilingual website for Rivetin, an independent extension platform for CloudTower.
 
 [Visit rivetin.dev](https://rivetin.dev/)
