@@ -1,5 +1,5 @@
 import { compareVersions, validVersion } from '../scripts/catalog-contract.mjs';
-import { validateRelease } from '../scripts/catalog-release-contract.mjs';
+import { validateRelease, validReleaseTime } from '../scripts/catalog-release-contract.mjs';
 
 const published = catalog => catalog?.plugins.filter(item => item.status === 'published') ?? [];
 
@@ -39,4 +39,10 @@ export function catalogReleaseIdentity(state){
     if(!record||state.publications.currentPublicationId!==record.publicationId||!['local-committed','verified'].includes(record.status)||record.catalogSHA256!==metadata.catalogSHA256||record.catalogBytes!==metadata.catalogBytes)throw Error('unbound');
     return {status:'registered',publicationId:metadata.publicationId,publicationState:record.status,verifiedAt:record.verifiedAt};
   }catch{return {status:'unverified',publicationId:null};}
+}
+export function catalogReadbackDate(identity) {
+  if (identity?.status !== 'registered' || identity.publicationState !== 'verified' || !validReleaseTime(identity.verifiedAt)) return null;
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date(identity.verifiedAt));
 }

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { attachProjectState } from './extension-copy.mjs';
-import { catalogSummary, selectPluginReleases, catalogReleaseIdentity } from './catalog-releases.mjs';
+import { catalogSummary, selectPluginReleases, catalogReleaseIdentity, catalogReadbackDate } from './catalog-releases.mjs';
 import { documentation } from './documentation.mjs';
 import { publicCatalogState } from '../scripts/catalog-files.mjs';
 import { fileURLToPath } from 'node:url';
@@ -12,7 +12,8 @@ const releaseIdentity=catalogReleaseIdentity(catalogState);
 function catalogReleaseNote(){
   if(releaseIdentity.status==='unregistered')return '<p>Catalog release ID: not registered. The first ID is assigned by a publication transaction.</p>';
   if(releaseIdentity.status==='unverified')return '<p>Catalog release ID could not be verified. Package availability is recorded separately.</p>';
-  const confirmation=releaseIdentity.publicationState==='verified'?`Publication readback recorded: <code>${releaseIdentity.verifiedAt.slice(0,10)}</code>.`:'Publication readback is pending.';
+  const readbackDate=catalogReadbackDate(releaseIdentity);
+  const confirmation=readbackDate?`Publication readback recorded (UTC+08:00): <code>${readbackDate}</code>.`:'Publication readback is pending.';
   return `<p>Catalog release: <code data-catalog-release-id>${releaseIdentity.publicationId}</code>. This identifies the catalog snapshot; plugin versions and verification scopes are recorded separately.</p><p>${confirmation}</p>`;
 }
 const repository = project.repository;

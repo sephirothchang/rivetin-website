@@ -314,7 +314,7 @@ Object.assign(messages, {
 });
 Object.assign(richMessages, {
   "Catalog release: {0}. This identifies the catalog snapshot; plugin versions and verification scopes are recorded separately.": "市场清单发布标识：{0}。它标识清单快照，插件版本与验证范围分别记录。",
-  "Publication readback recorded: {0}.": "发布回读记录日期：{0}。"
+  "Publication readback recorded (UTC+08:00): {0}.": "发布回读记录日期（UTC+08:00）：{0}。"
 });
 
 Object.assign(messages, {

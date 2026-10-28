@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { publicCatalogState } from './catalog-files.mjs';
-import { catalogSummary, selectPluginReleases,catalogReleaseIdentity } from '../src/catalog-releases.mjs';
+import { catalogSummary, selectPluginReleases,catalogReleaseIdentity,catalogReadbackDate } from '../src/catalog-releases.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
 const files = (await readdir(root,{recursive:true})).filter(file => file.endsWith('.html')).map(file=>file.replaceAll('\\','/'));
@@ -59,6 +59,9 @@ const guide = documents.get('guide.html');
 const releaseIdentity=catalogReleaseIdentity(catalogState);
 if(releaseIdentity.status==='registered')assert.ok(homepage.includes(`<code data-catalog-release-id>${releaseIdentity.publicationId}</code>`),'Catalog ID must come from validated metadata/ledger');
 else assert.ok(homepage.includes('Catalog release ID: not registered.'),'Missing identity must not be fabricated from schema or plugin versions');
+const readbackDate=catalogReadbackDate(releaseIdentity);
+if(readbackDate)assert.ok(homepage.includes(`Publication readback recorded (UTC+08:00): <code>${readbackDate}</code>.`),'Verified readback uses the Shanghai date with an explicit timezone');
+else if(releaseIdentity.status==='registered')assert.ok(homepage.includes('Publication readback is pending.'),'Pending release must not gain a readback date');
 assert.deepEqual([...documents.keys()].sort(),['404.html','guide.html','index.html']);
 for (const [page,html] of documents) {
   assert.ok(html.includes('type="button" class="language-link" data-language-switch'),page+': in-page language control');

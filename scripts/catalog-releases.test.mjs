@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateCatalog } from './catalog-contract.mjs';
 import { validateV4Catalog } from './catalog-v4-contract.mjs';
-import { catalogSummary, selectPluginReleases, catalogMetadata,catalogReleaseIdentity } from '../src/catalog-releases.mjs';
+import { catalogSummary, selectPluginReleases, catalogMetadata,catalogReleaseIdentity,catalogReadbackDate } from '../src/catalog-releases.mjs';
 import {reserveRelease,emptyReleaseLedger} from './catalog-release-contract.mjs';
 
 function entry(id, version, schema = 1, status = 'published') {
@@ -61,4 +61,12 @@ test('other legacy-only or source-only plugins never inherit the published IPMI 
 test('catalog ID is separate from schema/plugin versions and bad optional metadata never changes package selection',()=>{
  const s=state(),before=selectPluginReleases('rivetin-ipmi-redirection',s,'0.2.2');assert.deepEqual(catalogReleaseIdentity(s),{status:'unregistered',publicationId:null});const raw=Buffer.from(JSON.stringify(s.v4Catalog)),p=reserveRelease(emptyReleaseLedger(),raw,'2026-10-29T00:00:00.000Z');p.ledger.releases[0].status='local-committed';p.ledger.currentPublicationId=p.record.publicationId;
  const valid={...s,v4Raw:raw,releaseMetadata:p.metadata,publications:p.ledger};assert.equal(catalogReleaseIdentity(valid).publicationId,'ML-V4-261029.0');assert.equal(catalogReleaseIdentity(valid).publicationState,'local-committed');const bad={...valid,releaseMetadata:{...p.metadata,catalogSHA256:'0'.repeat(64)}};assert.equal(catalogReleaseIdentity(bad).status,'unverified');assert.deepEqual(selectPluginReleases('rivetin-ipmi-redirection',bad,'0.2.2'),before);
+});
+
+test('readback date uses Shanghai across UTC midnight and pending never acquires a verification date',()=>{
+ const verified={status:'registered',publicationState:'verified',verifiedAt:'2026-10-28T20:37:23.723Z'};
+ assert.equal(catalogReadbackDate(verified),'2026-10-29');
+ assert.equal(catalogReadbackDate({...verified,verifiedAt:'2026-10-28T15:59:59.999Z'}),'2026-10-28');
+ assert.equal(catalogReadbackDate({...verified,verifiedAt:'2026-10-28T16:00:00.000Z'}),'2026-10-29');
+ for(const identity of [null,{status:'unregistered'},{...verified,status:'unverified'},{...verified,publicationState:'local-committed'},{...verified,verifiedAt:null},{...verified,verifiedAt:'invalid'}])assert.equal(catalogReadbackDate(identity),null);
 });
