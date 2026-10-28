@@ -1,5 +1,20 @@
 // Reviewed Chinese copy. Build-time coverage rejects untranslated prose.
 export const messages = {
+  "The repository is private. The current catalog has 3 published entries and no public Rivetin installer is advertised here. Rivetin 0.1.4 has completed a controlled CLI upgrade, API and Kubernetes readback, Island asset byte verification and browser acceptance. The marketplace has read the website catalog and verified all three packages. Scope: CloudTower 4.9.0 development/test environment only; not a production or all-version guarantee. Valid SMART health samples, daily-history execution and resource-changing actions remain unverified.": "主仓库仍为私有，当前目录有 3 个已发布插件条目，本站不提供公开 Rivetin 框架安装器。Rivetin 0.1.4 已完成受控 CLI 升级、API 与 Kubernetes 状态回读、Island 资产字节核验及浏览器验收。市场已成功读取官网目录并校验全部 3 个包。范围仅限 CloudTower 4.9.0 开发测试环境，不构成生产或全版本保证。有效 SMART 健康样本、每日历史任务执行与资源变更仍未验证。",
+  "Controlled host-key verification, authentication and a manually approved identity command have been validated. This does not establish successful SMART collection or unattended daily execution. Fresh installations leave collection disabled. Connection secrets are saved by the encrypted backend and are never returned in saved-secret responses. The recent-result buffer is separate from persistent per-disk history.": "受控主机指纹核验、认证和一次人工批准的身份命令已通过验证。这不代表 SMART 采集成功，也不代表每日计划已实际执行。首次安装保持采集关闭。连接秘密由加密后端保存，读取响应不返回已保存的秘密。近期结果缓存与逐盘持久历史相互独立。",
+  "Plugin packages. Controlled framework preview.": "公开插件包。受控框架预览。",
+  "Framework 0.1.4": "框架 0.1.4",
+  "Rivetin 0.1.4 brings extension management, independent settings, lifecycle controls, an extension marketplace and operation logs into CloudTower. Functional settings are saved on the server; the browser stores personal interface preferences only.": "Rivetin 0.1.4 为 CloudTower 提供扩展管理、独立设置、生命周期控制、扩展市场和操作日志。功能配置保存在服务器端；浏览器只保留个人界面偏好。",
+
+  "v0.4.2 · Source": "v0.4.2 · 源码",
+  "v0.1.3 · Source": "v0.1.3 · 源码",
+  "Open native VM, disk and NIC editors from contextual shortcuts.": "从右键入口打开原生虚拟机、磁盘与网卡编辑器。",
+  "Open the native migration wizard for the selected resource.": "为所选资源打开原生迁移向导。",
+  "Let CloudTower handle configuration, permissions and confirmation.": "配置、权限与确认流程由 CloudTower 处理。",
+  "Version 0.4.2 remains a catalog draft. Native VM, disk, NIC and migration shortcuts are candidates for controlled CloudTower 4.9.0 acceptance. Live deployment and English host validation remain pending. No public package is offered for this draft.": "0.4.2 仍是目录草稿。原生虚拟机、磁盘、网卡与迁移入口是 CloudTower 4.9.0 受控验收候选；实机部署与英文主机页面验收尚未完成。此草稿不提供公开安装包。",
+  "Version 0.1.3 is available as a plugin package and requires Rivetin framework 0.1.2 or later. Its CloudTower 4.9.0 scope covers local tests and controlled API/DOM read checks. Live host SMART collection, actual history and cross-day collection remain unverified. Inventory health alone is not complete SMART data, and unavailable data must not be presented as healthy.": "0.1.3 已提供插件包，需要 Rivetin 框架 0.1.2 或更高版本。CloudTower 4.9.0 范围涵盖本地测试和受控 API/DOM 只读检查。真实主机 SMART 采集、实际历史与跨日采集仍未验证。库存健康状态不能代表完整 SMART 数据，数据不可用时也不能显示为健康。",
+  "Draft": "草稿",
+
   "The catalog provides IPMI, SSH Channel and Disk SMART plugin packages. Framework installers are not publicly available.": "目录提供 IPMI、SSH 通道与磁盘 SMART 插件包。框架安装器尚未公开。",
   "Framework installers remain unavailable. Review package compatibility before installation.": "框架安装器尚未公开。安装前请核对插件兼容性。",
   "Download plugin package": "下载插件包",

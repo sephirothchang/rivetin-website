@@ -3,7 +3,7 @@
   "reviewedOn": "2026-10-28",
   "repository": "https://github.com/sephirothchang/rivetin",
   "repositoryVisibility": "private",
-  "frameworkVersion": "0.1.0",
+  "frameworkVersion": "0.1.4",
   "publicInstallerAvailable": false,
   "liveRivetinAcceptance": "development-test-accepted",
   "liveAcceptanceScope": "CloudTower 4.9.0 development/test environment only; not a production or all-version guarantee.",
@@ -13,14 +13,15 @@
       "CLI upgrade",
       "API and Kubernetes readback",
       "Island asset byte verification",
-      "real browser acceptance"
+      "real browser acceptance",
+      "HTTPS plugin catalog and package validation"
     ],
     "ipmi": "0.1.2 enabled",
-    "ssh": "0.1.1 enabled; collection settings and approvals unconfigured; no real host connection",
-    "smart": "0.1.1 enabled; page mounting, switching and unbound diagnostics only; no real samples/history",
-    "contextMenu": "0.2.6 enabled; menus, draft input/Cancel and internal expand/collapse only; no resource mutations"
+    "ssh": "controlled handshake/authentication and manual identity command verified; broad collection unverified",
+    "smart": "0.1.3 public package; no valid SMART health sample or daily-history acceptance",
+    "contextMenu": "0.4.2 catalog draft; native dialog candidate"
   },
-  "catalogPublishedCount": 0,
+  "catalogPublishedCount": 3,
   "installerProfiles": [
     {
       "image": "registry.smtx.io/cloudtower/tower:v4.9.0-rc-20260517114030",
@@ -37,21 +38,21 @@
       "declaredTowerBuilds": [
         "4.9.0"
       ],
-      "catalogStatus": "draft",
-      "catalogHasAsset": false,
+      "catalogStatus": "published",
+      "catalogHasAsset": true,
       "packageFile": "rivetin-ipmi-redirection-0.1.2.rivetin.json"
     },
     {
       "id": "rivetin-context-menu",
-      "version": "0.2.6",
+      "version": "0.4.2",
       "manifestName": "Resource context menus",
       "frameworkApi": 1,
       "declaredTowerBuilds": [
         "4.9.0"
       ],
-      "catalogStatus": "not-listed",
+      "catalogStatus": "draft",
       "catalogHasAsset": false,
-      "packageFile": "rivetin-context-menu-0.2.6.rivetin.json"
+      "packageFile": "rivetin-context-menu-0.4.2.rivetin.json"
     },
     {
       "id": "rivetin-ssh-channel",
@@ -61,21 +62,21 @@
       "declaredTowerBuilds": [
         "4.9.0"
       ],
-      "catalogStatus": "not-listed",
-      "catalogHasAsset": false,
+      "catalogStatus": "published",
+      "catalogHasAsset": true,
       "packageFile": "rivetin-ssh-channel-0.1.1.rivetin.json"
     },
     {
       "id": "rivetin-disk-smart-info",
-      "version": "0.1.1",
+      "version": "0.1.3",
       "manifestName": "Disk SMART information",
       "frameworkApi": 1,
       "declaredTowerBuilds": [
         "4.9.0"
       ],
-      "catalogStatus": "not-listed",
-      "catalogHasAsset": false,
-      "packageFile": "rivetin-disk-smart-info-0.1.1.rivetin.json"
+      "catalogStatus": "published",
+      "catalogHasAsset": true,
+      "packageFile": "rivetin-disk-smart-info-0.1.3.rivetin.json"
     },
     {
       "id": "rivetin-network-topology",
@@ -97,5 +98,6 @@
       "catalogHasAsset": false,
       "packageFile": "rivetin-security-policy-converter-0.1.0.rivetin.json"
     }
-  ]
+  ],
+  "liveFrameworkVersion": "0.1.4"
 }
