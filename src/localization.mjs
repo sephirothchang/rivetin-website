@@ -43,28 +43,14 @@ function chineseHtml(html) {
   });
 }
 
-function languageLinks(html, locale, page) {
-  const chinese=locale==='zh-CN';
-  const target=chinese?`../${page}`:`zh/${page}`;
-  const control=`<a class="language-link" data-language-switch href="${target}" lang="${chinese?'en':'zh-CN'}" hreflang="${chinese?'en':'zh-CN'}" aria-label="${chinese?'Switch to English':'Switch to Chinese'}">${chinese?'EN':'中文'}</a>`;
-  html=html.replace('<button class="mobile-toggle"',`${control}<button class="mobile-toggle"`);
-  const suffix=page==='index.html'?'':page;
-  const alternates=`<link rel="alternate" hreflang="en" href="https://rivetin.dev/${suffix}"><link rel="alternate" hreflang="zh-CN" href="https://rivetin.dev/zh/${suffix}"><link rel="alternate" hreflang="x-default" href="https://rivetin.dev/${suffix}">`;
-  html=html.replace('</head>',`${alternates}</head>`);
-  if (chinese) {
-    html=html.replace('<html lang="en">','<html lang="zh-CN">');
-    html=html.replace(/((?:href|src)=")assets\//gu,'$1../assets/');
-    html=html.replace('<base href="/">','<base href="/zh/">');
-    html=html.replace(/(<link rel="canonical" href=")https:\/\/rivetin\.dev\//u,'$1https://rivetin.dev/zh/');
-  }
-  return html;
-}
+export const browserTranslations={messages,richMessages,labels};
 
 export function localizedPages(englishPages) {
   const result={};
   for (const [page,html] of Object.entries(englishPages)) {
-    result[page]=languageLinks(html,'en',page);
-    result[`zh/${page}`]=languageLinks(chineseHtml(html),'zh-CN',page);
+    chineseHtml(html);
+    const control='<button type="button" class="language-link" data-language-switch aria-label="Switch to Chinese">中文</button>';
+    result[page]=html.replace('<button class="mobile-toggle"',control+'<button class="mobile-toggle"');
   }
   return result;
 }

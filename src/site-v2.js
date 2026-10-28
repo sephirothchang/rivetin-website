@@ -1,12 +1,82 @@
-const chinese = document.documentElement.lang === 'zh-CN';
-const ui = chinese ? {open:'打开导航',close:'关闭导航',copy:'复制',copied:'已复制',select:'选择代码'} : {open:'Open navigation',close:'Close navigation',copy:'Copy',copied:'Copied',select:'Select code'};
-const languageLink=document.querySelector('[data-language-switch]');
-if(languageLink){
-  const target=new URL(languageLink.getAttribute('href'),document.baseURI);
-  const updateLanguageHash=()=>{target.hash=location.hash;languageLink.href=target.href;};
-  updateLanguageHash();
-  window.addEventListener('hashchange',updateLanguageHash);
+let chinese = false;
+let ui = {open:'Open navigation',close:'Close navigation',copy:'Copy',copied:'Copied',select:'Select code'};
+const languageLink = document.querySelector('[data-language-switch]');
+const englishTitle = document.title;
+const descriptionMeta = document.querySelector('meta[name="description"]');
+const englishDescription = descriptionMeta?.content;
+let languageDictionary;
+let translationEntries;
+
+function loadLanguageDictionary() {
+  if (!languageDictionary) languageDictionary=fetch(new URL('assets/zh-CN.json',document.baseURI),{credentials:'omit',cache:'no-cache'})
+    .then(response=>{if(!response.ok)throw new Error('Language unavailable');return response.json();})
+    .catch(error=>{languageDictionary=undefined;throw error;});
+  return languageDictionary;
 }
+function translated(text,dictionary) {
+  if(Object.hasOwn(dictionary.messages,text))return dictionary.messages[text];
+  if(Object.hasOwn(dictionary.labels,text))return dictionary.labels[text];
+  if(text.startsWith('View '))return '查看'+translated(text.slice(5),dictionary);
+  if(text.startsWith('Copy '))return '复制：'+translated(text.slice(5),dictionary);
+  return text;
+}
+function collectTranslationEntries(dictionary) {
+  const paragraphs=[];
+  const richElements=new Set();
+  document.querySelectorAll('p').forEach(element=>{
+    if(!element.querySelector('code'))return;
+    const code=[];
+    const english=element.innerHTML;
+    const key=english.replace(/<code\b[^>]*>[\s\S]*?<\/code>/gu,block=>'{'+(code.push(block)-1)+'}');
+    if(!Object.hasOwn(dictionary.richMessages,key))return;
+    const chineseHtml=dictionary.richMessages[key].replace(/\{(\d+)\}/gu,(_,i)=>code[Number(i)]);
+    paragraphs.push({element,english,chineseHtml});richElements.add(element);
+  });
+  const texts=[];
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode()){
+    const node=walker.currentNode,parent=node.parentElement;
+    if(!parent||parent.closest('pre,code,script,style,[data-language-switch],.copy-code,.result-count')||richElements.has(parent.closest('p')))continue;
+    const english=node.nodeValue,key=english.trim();
+    if(key)texts.push({node,english,chineseText:english.replace(key,translated(key,dictionary))});
+  }
+  const attributes=[...document.querySelectorAll('[aria-label]')].filter(element=>element!==languageLink&&element!==mobileButton).map(element=>({element,english:element.getAttribute('aria-label')}));
+  return {paragraphs,texts,attributes};
+}
+function updateLocaleUI() {
+  ui=chinese?{open:'打开导航',close:'关闭导航',copy:'复制',copied:'已复制',select:'选择代码'}:{open:'Open navigation',close:'Close navigation',copy:'Copy',copied:'Copied',select:'Select code'};
+  mobileButton?.setAttribute('aria-label',mobileButton.getAttribute('aria-expanded')==='true'?ui.close:ui.open);
+  const count=document.querySelector('.result-count');
+  if(count){const visible=[...document.querySelectorAll('.extension-row')].filter(row=>!row.hidden).length;count.textContent=chinese?visible+' 个扩展':visible+' extension'+(visible===1?'':'s');}
+  document.querySelectorAll('.copy-code').forEach(button=>{button.textContent=ui[button.dataset.copyState||'copy'];});
+  if(languageLink){languageLink.textContent=chinese?'EN':'中文';languageLink.setAttribute('aria-label',chinese?'Switch to English':'Switch to Chinese');}
+}
+async function setLanguage(locale,remember=true) {
+  const nextChinese=locale==='zh-CN';
+  if(nextChinese===chinese)return;
+  const dictionary=await loadLanguageDictionary();
+  if(!translationEntries)translationEntries=collectTranslationEntries(dictionary);
+  const anchor=[...document.querySelectorAll('.hero-title,.feature,.extension-row,.section-heading,.docs-content h1,.docs-content h2,.docs-content p,.code-block')].map(element=>({element,rect:element.getBoundingClientRect()})).filter(({rect})=>rect.bottom>100&&rect.top<innerHeight).sort((a,b)=>Math.abs(a.rect.top-110)-Math.abs(b.rect.top-110))[0]?.element;
+  const anchorTop=anchor?.getBoundingClientRect().top;
+  const previousScroll=scrollY;
+  translationEntries.paragraphs.forEach(({element,english,chineseHtml})=>{element.innerHTML=nextChinese?chineseHtml:english;});
+  translationEntries.texts.forEach(({node,english,chineseText})=>{node.nodeValue=nextChinese?chineseText:english;});
+  translationEntries.attributes.forEach(({element,english})=>element.setAttribute('aria-label',nextChinese?translated(english,dictionary):english));
+  chinese=nextChinese;
+  document.documentElement.lang=chinese?'zh-CN':'en';
+  document.title=chinese?translated(englishTitle,dictionary):englishTitle;
+  if(descriptionMeta)descriptionMeta.content=chinese?translated(englishDescription,dictionary):englishDescription;
+  updateLocaleUI();
+  const delta=anchor?.isConnected?anchor.getBoundingClientRect().top-anchorTop:0;
+  window.scrollTo({top:previousScroll+delta,behavior:'instant'});
+  if(remember){try{sessionStorage.setItem('rivetin.site.language',locale);}catch{}}
+}
+languageLink?.addEventListener('click',async()=>{
+  languageLink.disabled=true;
+  try{await setLanguage(chinese?'en':'zh-CN');languageLink.removeAttribute('title');}
+  catch{languageLink.title=chinese?'语言暂不可用，请重试。':'Language unavailable. Please try again.';}
+  finally{languageLink.disabled=false;}
+});
 
 const dropdownButton = document.querySelector('.nav-trigger');
 const dropdown = document.querySelector('.nav-popover');
@@ -112,8 +182,10 @@ document.querySelectorAll('.copy-code').forEach(button=>{
     const code=button.closest('.code-block').querySelector('code');
     try {
       await navigator.clipboard.writeText(code.textContent);
+      button.dataset.copyState='copied';
       button.textContent=ui.copied;
     } catch {
+      button.dataset.copyState='select';
       button.textContent=ui.select;
       const selection=window.getSelection();
       const range=document.createRange();
@@ -121,6 +193,8 @@ document.querySelectorAll('.copy-code').forEach(button=>{
       selection.removeAllRanges();
       selection.addRange(range);
     }
-    window.setTimeout(()=>{button.textContent=ui.copy;},2000);
+    window.setTimeout(()=>{button.dataset.copyState='copy';button.textContent=ui.copy;},2000);
   });
 });
+
+try { if(sessionStorage.getItem('rivetin.site.language')==='zh-CN')setLanguage('zh-CN',false).catch(()=>{}); } catch {}

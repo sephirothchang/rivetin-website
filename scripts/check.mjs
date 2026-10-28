@@ -13,7 +13,7 @@ const production = process.argv.includes('--production');
 for (const [name, html] of documents) {
   const chinese=name.startsWith('zh/');
   assert.ok(html.includes(`<html lang="${chinese?'zh-CN':'en'}"`), `${name}: document language`);
-  if (!chinese) assert.doesNotMatch(html.replace(/<a[^>]*data-language-switch[^>]*>[\s\S]*?<\/a>/gu,''), /\p{Script=Han}/u, `${name}: English content`);
+  if (!chinese) assert.doesNotMatch(html.replace(/<button[^>]*data-language-switch[^>]*>[\s\S]*?<\/button>/gu,''), /\p{Script=Han}/u, `${name}: English content`);
   else assert.match(html,/\p{Script=Han}/u,`${name}: Chinese content`);
   assert.doesNotMatch(html, /https:\/\/github\.com\/sephirothchang\/smartx-extensions/u, `${name}: stale repository URL`);
   assert.match(html, /<meta name="viewport"/u, `${name}: responsive viewport`);
@@ -49,14 +49,15 @@ for (const [name, html] of documents) {
 }
 const homepage = documents.get('index.html');
 const guide = documents.get('guide.html');
-assert.deepEqual([...documents.keys()].sort(),['404.html','guide.html','index.html','zh/404.html','zh/guide.html','zh/index.html']);
-for (const page of ['index.html','guide.html','404.html']) {
-  const en=documents.get(page),zh=documents.get(`zh/${page}`);
-  assert.ok(en.includes(`data-language-switch href="zh/${page}"`),`${page}: Chinese switch route`);
-  assert.ok(zh.includes(`data-language-switch href="../${page}"`),`${page}: English switch route`);
-  assert.deepEqual([...en.matchAll(/<code\b[^>]*>([\s\S]*?)<\/code>/gu)].map(m=>m[1]),[...zh.matchAll(/<code\b[^>]*>([\s\S]*?)<\/code>/gu)].map(m=>m[1]),`${page}: translation must preserve commands and identifiers`);
-  for (const locale of ['en','zh-CN']) assert.ok(zh.includes(`hreflang="${locale}"`),`${page}: alternate language discovery`);
+assert.deepEqual([...documents.keys()].sort(),['404.html','guide.html','index.html']);
+for (const [page,html] of documents) {
+  assert.ok(html.includes('type="button" class="language-link" data-language-switch'),page+': in-page language control');
+  assert.ok(!/href="(?:\.\.\/)?zh\//u.test(html),page+': language switching must not navigate to a separate route');
 }
+const languageData=JSON.parse(await readFile(path.join(root,'assets','zh-CN.json'),'utf8'));
+assert.equal(languageData.messages['Host access'],'主机访问');
+assert.equal(languageData.messages['Security policy'],'安全策略');
+assert.equal(languageData.richMessages['The CLI is {0}, the API prefix is {1}, plugin IDs begin with {2}, and plugin archives end in {3}. Legacy PluginKit IDs, paths, environment variables and package formats have no compatibility aliases. The CLI does not automatically import or migrate old deployments.'].match(/\{\d+\}/gu).length,4);
 for (const copy of extensionCopy) {
   const row=homepage.match(new RegExp(`<article class="extension-row" id="extension-${copy.key}"[\\s\\S]*?</article>`,'u'))?.[0];
   assert.ok(row?.includes(`class="badge enhancement-badge">${copy.enhancement}</span>`),`${copy.id}: functional area badge`);
