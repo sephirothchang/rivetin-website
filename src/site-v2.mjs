@@ -74,8 +74,10 @@ function dialogs() {
       <h3 class="dialog-subheading">Current boundary</h3><p id="dialog-copy-${e.key}">${e.detail}</p>
       <div class="dialog-compatibility"><strong>Declared Tower builds</strong><span>${e.declaredTowerBuilds.length?e.declaredTowerBuilds.join(', ')+' — declared version; acceptance is limited to the documented development/test scope.':'None. Live installation and activation remain gated.'}</span></div>
       <div class="dialog-note">Framework installers remain unavailable. Review package compatibility before installation.</div>
-      ${e.release?`<a class="text-link" href="${e.release.downloadPath}">Download plugin package ${icon('external')}</a>`:''}
-      <a class="button button-dark" href="guide.html#extension-workflow">Read the installation guide ${icon('arrow')}</a>
+      <div class="hero-actions">
+        <a class="text-link" href="guide.html#extension-workflow">Read the installation guide ${icon('external')}</a>
+        ${e.release?`<a class="button button-dark" href="${e.release.downloadPath}" download>Download plugin package ${icon('arrow')}</a>`:''}
+      </div>
     </div></dialog>`).join('');
 }
 
