@@ -13,7 +13,8 @@ const server = http.createServer(async (request, response) => {
   }
   try {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
-    const target = path.resolve(root, `.${pathname === '/' ? '/index.html' : pathname}`);
+    const page = pathname.endsWith('/') ? `${pathname}index.html` : pathname;
+    const target = path.resolve(root, `.${page}`);
     if (!target.startsWith(root + path.sep) || !(await stat(target)).isFile()) {
       response.writeHead(404).end('Not found');
       return;
