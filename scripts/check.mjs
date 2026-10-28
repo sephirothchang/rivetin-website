@@ -14,6 +14,7 @@ const production = process.argv.includes('--production');
 const catalogState=await publicCatalogState(path.dirname(root));
 for(const record of catalogState.packages)assert.deepEqual(await readFile(path.join(root,record.path.slice(1))),await readFile(path.join(catalogState.publicRoot,record.path.slice(1))),'Deployed package bytes must equal reviewed source bytes');
 if(catalogState.catalog)assert.deepEqual(await readFile(path.join(root,'catalog/plugins.json')),catalogState.indexRaw,'Deployed index bytes must equal reviewed source bytes');
+if(catalogState.v4Raw)assert.deepEqual(await readFile(path.join(root,'catalog/v4/plugins.json')),catalogState.v4Raw,'Deployed v4 index bytes must equal reviewed source bytes');
 for (const [name, html] of documents) {
   const chinese=name.startsWith('zh/');
   assert.ok(html.includes(`<html lang="${chinese?'zh-CN':'en'}"`), `${name}: document language`);

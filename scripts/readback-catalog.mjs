@@ -18,7 +18,7 @@ export async function download(pathname, expected, max, fetcher=fetch) {
   return {raw,receipt:{schemaVersion:1,site:SITE,path:pathname,status:200,sha256:hash,bytes,verifiedAt:new Date().toISOString()}};
 }
 
-async function ignoredOutput(output){
+export async function ignoredOutput(output){
   if(!path.isAbsolute(output)||!output.split(/[\\/]/u).includes('.local'))fail('CATALOG_IGNORED_OUTPUT_REQUIRED');
   let current=path.parse(output).root;
   for(const part of output.slice(current.length).split(path.sep).filter(Boolean)){

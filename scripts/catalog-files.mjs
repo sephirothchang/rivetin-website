@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { INDEX_PATH, MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, MAX_TOTAL_BYTES, exact, fail, sha256, validHash, packagePath, parsePackagePath, parseJson, validateCatalog, validatePackage, validateTransition } from './catalog-contract.mjs';
+import { V4_INDEX_PATH, validateV4Catalog, validateV4Package } from './catalog-v4-contract.mjs';
 
 const LEDGER='catalog-integrity.json';
 export async function optionalStat(file){try{return await lstat(file);}catch(error){if(error.code==='ENOENT')return null;throw error;}}
@@ -36,7 +37,7 @@ async function treeFiles(root){
   }
   await visit();return files;
 }
-async function ensureParents(root,name){
+export async function ensureParents(root,name){
   relative(name);let current=root;
   for(const part of name.split('/').slice(0,-1)){
     current=path.join(current,part);let info=await optionalStat(current);
@@ -44,8 +45,8 @@ async function ensureParents(root,name){
     if(!info.isDirectory()||info.isSymbolicLink())fail('CATALOG_PATH_INVALID');
   }
 }
-async function optionalBytes(root,name,max){return await optionalStat(path.join(root,name))?boundedFile(root,name,max):null;}
-function ledger(value){
+export async function optionalBytes(root,name,max){return await optionalStat(path.join(root,name))?boundedFile(root,name,max):null;}
+export function ledger(value){
   if(!exact(value,['schemaVersion','packages'])||value.schemaVersion!==1||!Array.isArray(value.packages)||value.packages.length>5000)fail('CATALOG_LEDGER_INVALID');
   const seen=new Set();let total=0;
   for(const item of value.packages){
@@ -54,7 +55,8 @@ function ledger(value){
   }
   if(total>MAX_TOTAL_BYTES)fail('CATALOG_SITE_SIZE_LIMIT');return value;
 }
-export async function publicCatalogState(siteRoot){
+export async function publicCatalogState(siteRoot,{allowLocked=false}={}){
+  if(!allowLocked&&await optionalStat(path.join(siteRoot,'.local','catalog-import.lock')))fail('CATALOG_IMPORT_LOCKED');
   const publicRoot=path.join(siteRoot,'public'),info=await optionalStat(publicRoot);
   const ledgerRaw=await optionalBytes(siteRoot,LEDGER,MAX_INDEX_BYTES);
   if(!info){if(ledgerRaw)fail('CATALOG_LEDGER_ORPHAN');return {catalog:null,indexRaw:null,ledgerRaw:null,packages:[],publicRoot};}
@@ -63,16 +65,21 @@ export async function publicCatalogState(siteRoot){
   if(!indexRaw){if(files.length||ledgerRaw)fail('CATALOG_INDEX_MISSING');return {catalog:null,indexRaw:null,ledgerRaw:null,packages:[],publicRoot};}
   if(!ledgerRaw)fail('CATALOG_LEDGER_MISSING');
   const catalog=validateCatalog(parseJson(indexRaw,MAX_INDEX_BYTES)),packages=ledger(parseJson(ledgerRaw,MAX_INDEX_BYTES)).packages;
-  const expected=new Set([INDEX_PATH.slice(1),...packages.map(item=>item.path.slice(1))]);
+  const v4Raw=files.includes(V4_INDEX_PATH.slice(1))?await boundedFile(publicRoot,V4_INDEX_PATH.slice(1),MAX_INDEX_BYTES):null;
+  const v4Catalog=v4Raw?validateV4Catalog(parseJson(v4Raw,MAX_INDEX_BYTES)):null;
+  const expected=new Set([INDEX_PATH.slice(1),...(v4Raw?[V4_INDEX_PATH.slice(1)]:[]),...packages.map(item=>item.path.slice(1))]);
   if(files.length!==expected.size||files.some(file=>!expected.has(file)))fail('CATALOG_PUBLIC_FILE_UNREGISTERED');
   for(const record of packages){
     const raw=await boundedFile(publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES),identity=parsePackagePath(record.path);
     if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_IMMUTABLE_FILE_CHANGED');
-    const current=catalog.plugins.find(item=>item.downloadPath===record.path);
-    const actual=validatePackage(raw,current);if(actual.id!==identity.id||actual.version!==identity.version)fail('CATALOG_PACKAGE_IDENTITY_MISMATCH');
+    const current=catalog.plugins.find(item=>item.downloadPath===record.path),currentV4=v4Catalog?.plugins.find(item=>item.downloadPath===record.path);
+    const manifest=parseJson(raw,MAX_PACKAGE_BYTES).manifest;
+    const actual=manifest?.compatibility?.schemaVersion===2?validateV4Package(raw,currentV4):validatePackage(raw,current);
+    if(current&&manifest?.compatibility?.schemaVersion===2||currentV4&&manifest?.compatibility?.schemaVersion!==2||actual.id!==identity.id||actual.version!==identity.version)fail('CATALOG_PACKAGE_IDENTITY_MISMATCH');
   }
   for(const item of catalog.plugins.filter(item=>item.status==='published'))if(!packages.some(record=>record.path===item.downloadPath&&record.sha256===item.sha256))fail('CATALOG_PUBLISHED_FILE_MISSING');
-  return {catalog,indexRaw,ledgerRaw,packages,publicRoot};
+  for(const item of v4Catalog?.plugins.filter(item=>item.status==='published')??[])if(!packages.some(record=>record.path===item.downloadPath&&record.sha256===item.sha256))fail('CATALOG_PUBLISHED_FILE_MISSING');
+  return {catalog,indexRaw,v4Catalog,v4Raw,ledgerRaw,packages,publicRoot};
 }
 export async function frozenDrop(dropRoot,expectedStageHash){
   if(!path.isAbsolute(dropRoot)||!validHash(expectedStageHash))fail('CATALOG_FROZEN_INPUT_REQUIRED');
@@ -95,11 +102,11 @@ export async function frozenDrop(dropRoot,expectedStageHash){
   if(files.length!==allowed.size||files.some(file=>!allowed.has(file)))fail('CATALOG_DROP_FILE_UNREGISTERED');
   return {stage,stageRaw,indexRaw,catalog,packages:records,dropRoot};
 }
-async function exclusive(root,name,raw){
+export async function exclusive(root,name,raw){
   await ensureParents(root,name);const target=await safePath(root,name,{missing:true}),handle=await open(target,'wx',0o644);
   try{await handle.writeFile(raw);await handle.sync();}finally{await handle.close();}
 }
-async function replace(root,name,raw,expected){
+export async function replace(root,name,raw,expected){
   await ensureParents(root,name);const existing=await optionalBytes(root,name,MAX_INDEX_BYTES);
   if(!isDeepStrictEqual(existing,expected))fail('CATALOG_TARGET_CHANGED');
   const temporary=`${name}.${randomUUID()}.tmp`;
@@ -114,7 +121,7 @@ export async function importCatalog({siteRoot,dropRoot,stageHash,check=false}){
   const lock=await open(path.join(siteRoot,'.local','catalog-import.lock'),'wx',0o600).catch(error=>{if(error.code==='EEXIST')fail('CATALOG_IMPORT_LOCKED');throw error;});
   const created=[];let ledgerWritten=false,state,newLedger;
   try{
-    state=await publicCatalogState(siteRoot);validateTransition(state.catalog,drop.catalog);
+    state=await publicCatalogState(siteRoot,{allowLocked:true});validateTransition(state.catalog,drop.catalog);
     const combined=new Map(state.packages.map(record=>[record.path,record]));
     for(const record of drop.packages){const previous=combined.get(record.path);if(previous&&!isDeepStrictEqual(previous,record))fail('CATALOG_SAME_VERSION_IMMUTABLE');combined.set(record.path,record);}
     const packages=ledger({schemaVersion:1,packages:[...combined.values()].sort((a,b)=>a.path.localeCompare(b.path,'en'))}).packages;
@@ -141,17 +148,19 @@ export async function importCatalog({siteRoot,dropRoot,stageHash,check=false}){
 }
 export async function copyPublicCatalog(siteRoot,distRoot){
   const state=await publicCatalogState(siteRoot);
-  const expected=new Set(state.catalog?[INDEX_PATH.slice(1),...state.packages.map(record=>record.path.slice(1))]:[]);
+  const expected=new Set(state.catalog?[INDEX_PATH.slice(1),...(state.v4Raw?[V4_INDEX_PATH.slice(1)]:[]),...state.packages.map(record=>record.path.slice(1))]:[]);
   for(const dir of ['catalog','downloads'])if(await optionalStat(path.join(distRoot,dir)))for(const file of await treeFiles(path.join(distRoot,dir)))if(!expected.has(`${dir}/${file}`))fail('CATALOG_DIST_FILE_UNREGISTERED');
   if(!state.catalog)return state;
   for(const name of expected){
-    const raw=name===INDEX_PATH.slice(1)?state.indexRaw:await boundedFile(state.publicRoot,name,MAX_PACKAGE_BYTES);
+    const raw=name===INDEX_PATH.slice(1)?state.indexRaw:name===V4_INDEX_PATH.slice(1)?state.v4Raw:await boundedFile(state.publicRoot,name,MAX_PACKAGE_BYTES);
     const record=state.packages.find(item=>item.path===`/${name}`);
     if(record&&(raw.length!==record.bytes||sha256(raw)!==record.sha256))fail('CATALOG_INPUT_CHANGED');
     await ensureParents(distRoot,name);const target=await safePath(distRoot,name,{missing:true});
     if(record&&await optionalStat(target)){const previous=await boundedFile(distRoot,name,MAX_PACKAGE_BYTES);if(!raw.equals(previous))fail('CATALOG_DIST_IMMUTABLE_CHANGED');}
-    if(name===INDEX_PATH.slice(1)&&!(await boundedFile(state.publicRoot,name,MAX_INDEX_BYTES)).equals(raw))fail('CATALOG_INPUT_CHANGED');
+    if((name===INDEX_PATH.slice(1)||name===V4_INDEX_PATH.slice(1))&&!(await boundedFile(state.publicRoot,name,MAX_INDEX_BYTES)).equals(raw))fail('CATALOG_INPUT_CHANGED');
     await writeFile(target,raw);
   }
+  const after=await publicCatalogState(siteRoot);
+  if(!isDeepStrictEqual(after.indexRaw,state.indexRaw)||!isDeepStrictEqual(after.v4Raw,state.v4Raw)||!isDeepStrictEqual(after.ledgerRaw,state.ledgerRaw))fail('CATALOG_INPUT_CHANGED');
   return state;
 }

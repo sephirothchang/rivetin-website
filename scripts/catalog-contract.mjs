@@ -55,7 +55,7 @@ function safeEmbeddedPath(value){
 }
 // The framework owns settings/SSH semantics. Website checks data and file integrity;
 // it never imports or executes any embedded plugin code.
-export function validatePackage(raw,expected){
+export function validatePackage(raw,expected,validateEntry=validateCatalog){
   const value=parseJson(raw,MAX_PACKAGE_BYTES);
   if(!exact(value,['format','manifest','files'])||value.format!=='rivetin-package-v1'||!object(value.manifest)||!Array.isArray(value.files)||!value.files.length||value.files.length>100)fail('CATALOG_PACKAGE_INVALID');
   const manifest=value.manifest;
@@ -63,7 +63,7 @@ export function validatePackage(raw,expected){
   const metadata={id:manifest.id,version:manifest.version,frameworkApi:manifest.compatibility?.frameworkApi};
   for(const key of ['name','description','author','license','permissions','compatibility'])metadata[key]=manifest[key];
   const candidate={...metadata,status:'published',downloadPath:packagePath(manifest.id,manifest.version),sha256:sha256(raw)};
-  validateCatalog({schemaVersion:3,plugins:[candidate]});
+  validateEntry({schemaVersion:3,plugins:[candidate]});
   if(expected&&!isDeepStrictEqual(candidate,expected))fail('CATALOG_PACKAGE_METADATA_MISMATCH');
   const seen=new Set();let total=0;
   for(const file of value.files){

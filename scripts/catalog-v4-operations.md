@@ -1,0 +1,7 @@
+# V4 catalog transaction recovery
+
+Import and recovery acquire the same exclusive `.local/catalog-v4-owner.lock` before accessing the transaction. An existing owner marker blocks both operations, including when its owner cannot be identified; it is never automatically overridden. The catalog lock also blocks cooperative v3 imports and production builds.
+
+After an interrupted process, preserve both lock files, the transaction journal, and the catalog state. An operator must independently establish that the specific writer or recovery process has exited, and that no other operator is working on this site, before manually removing the owner marker. A PID in the marker alone does not prove ownership or termination. Then run the recovery command with the transaction ID from the catalog lock. Recovery checks journal and catalog bytes and either reports the verified committed state, rolls back, or retains the catalog lock on conflict. If recovery itself is terminated, repeat the same independent verification before handling its owner marker.
+
+If the catalog lock has a null manifest hash, or the journal is missing or invalid, recovery cannot establish the outcome and retains the lock. Treat this as an unknown outcome requiring manual investigation; do not remove the catalog lock or retry an import merely to bypass the error. Abrupt power loss and non-cooperating filesystem writers are not covered by these guarantees. The legacy v3 importer does not provide the v4 persistent journal.
