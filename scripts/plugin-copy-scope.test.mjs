@@ -24,3 +24,5 @@ test('plugin copy keeps limited UI acceptance separate from failures, host execu
  assert.match(guide,/did not execute host connections, commands, collection, approval, migration or cross-day schedules/u);
  assert.doesNotMatch(guide,/Source 0\.1\.2 is a compatibility candidate/u);
 });
+
+test('builtin identity success does not turn collection or queued tool integration into accepted deployment',()=>{const ssh=extensionCopy.find(c=>c.key==='ssh'),topology=extensionCopy.find(c=>c.key==='topology'),policy=extensionCopy.find(c=>c.key==='converter');assert.equal(ssh.status,'Collection unverified');assert.match(ssh.detail,/one built-in host.identity review/u);assert.match(ssh.detail,/does not validate SMART consumer execution/u);assert.match(topology.detail,/no real deployment or installed-feature acceptance/u);assert.match(policy.detail,/not yet deployed or accepted/u);for(const c of [ssh,topology,policy])assert.ok(Object.hasOwn(messages,c.detail));});

@@ -16,6 +16,13 @@ export const validId=id=>typeof id==='string'&&id.length<=100&&/^rivetin-[a-z0-9
 export const validVersion=version=>typeof version==='string'&&/^(0|[1-9]\d{0,7})\.(0|[1-9]\d{0,7})\.(0|[1-9]\d{0,7})$/u.test(version);
 export const validHash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/u.test(value);
 export const compareVersions=(a,b)=>a.split('.').map(Number).map((part,i)=>part-Number(b.split('.')[i])).find(part=>part!==0)||0;
+export const MINIMUM_ONLY_READER_VERSION='0.2.4';
+// This checks schema2 syntax/reader floor only. Runtime eligibility uses minimum,
+// while immutable package metadata keeps any deprecated field byte-for-byte.
+export function validSchema2Minimum(value){
+  return validVersion(value?.frameworkMinVersion)&&
+    (Object.hasOwn(value,'frameworkMaxVersionExclusive')?validVersion(value.frameworkMaxVersionExclusive):compareVersions(value.frameworkMinVersion,MINIMUM_ONLY_READER_VERSION)>=0);
+}
 export function packagePath(id,version){
   if(!validId(id)||!validVersion(version))fail('CATALOG_IDENTITY_INVALID');
   return `/downloads/plugins/${id}/${version}/${id}-${version}.rivetin.json`;
@@ -35,7 +42,6 @@ export function compatibility(value){
   if(!object(value)||Object.keys(value).some(key=>!allowed.includes(key))||value.frameworkApi!==1||!text(value.tower,120))fail('CATALOG_COMPATIBILITY_INVALID');
   if(value.towerBuilds!==undefined&&(!Array.isArray(value.towerBuilds)||value.towerBuilds.length>20||new Set(value.towerBuilds).size!==value.towerBuilds.length||value.towerBuilds.some(build=>typeof build!=='string'||build.length>100||!/^(0|[1-9]\d{0,7})\.(0|[1-9]\d{0,7})\.(0|[1-9]\d{0,7})(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$/u.test(build))))fail('CATALOG_COMPATIBILITY_INVALID');
   for(const key of ['frameworkMinVersion','frameworkMaxVersionExclusive'])if(value[key]!==undefined&&!validVersion(value[key]))fail('CATALOG_COMPATIBILITY_INVALID');
-  if(value.frameworkMinVersion&&value.frameworkMaxVersionExclusive&&compareVersions(value.frameworkMinVersion,value.frameworkMaxVersionExclusive)>=0)fail('CATALOG_COMPATIBILITY_INVALID');
   return value;
 }
 const fields=['id','version','frameworkApi','status','downloadPath','sha256','name','description','author','license','permissions','compatibility'];

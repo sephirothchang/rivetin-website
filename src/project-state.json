@@ -3,10 +3,10 @@
   "reviewedOn": "2026-10-29",
   "repository": "https://github.com/sephirothchang/rivetin",
   "repositoryVisibility": "private",
-  "frameworkVersion": "0.2.2",
+  "frameworkVersion": "0.2.4",
   "frameworkSourcePublication": {
-    "version": "0.2.2",
-    "commit": "f31821babc20cb20d8e1cbc3508a820a93666e5e",
+    "version": "0.2.4",
+    "commit": "c86aec1487d15356f54a3d64291d9afdf6f741c2",
     "verifiedOn": "2026-10-29"
   },
   "publicInstallerAvailable": false,
@@ -18,7 +18,7 @@
     "frameworkVersion": "0.2.0",
     "reviewedOn": "2026-10-28",
     "reference": "docs/0.2-validation.md",
-    "documentSHA256": "26d44b21fd363d75815abefb87d028db8a754002c253ef2805e6f92723700b8b",
+    "documentSHA256": "fd171625d70befa4408e0c9d7dae75e80237c9b112f9df6ebacb73fb802fb3d8",
     "scope": "CloudTower 4.9.0 development/test environment only; not a production or all-version guarantee."
   },
   "catalogPublication": {

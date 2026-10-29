@@ -41,9 +41,9 @@ for (const [name, current] of [['empty', []], ['draft', [entry('rivetin-ipmi-red
   });
 }
 
-test('current framework range is inclusive at minimum and exclusive at maximum', () => {
+test('current framework minimum is inclusive and deprecated maximum never blocks selection', () => {
   assert.equal(selectPluginReleases('rivetin-ipmi-redirection', state(), '0.2.0').release.version, '0.1.4');
-  for (const version of ['0.1.9', '0.3.0', 'unknown']) {
+  for (const version of ['0.1.9', 'unknown']) {
     const selected = selectPluginReleases('rivetin-ipmi-redirection', state(), version);
     assert.equal(selected.release, null);
     assert.equal(selected.currentRelease.version, '0.1.4');
@@ -69,4 +69,12 @@ test('readback date uses Shanghai across UTC midnight and pending never acquires
  assert.equal(catalogReadbackDate({...verified,verifiedAt:'2026-10-28T15:59:59.999Z'}),'2026-10-28');
  assert.equal(catalogReadbackDate({...verified,verifiedAt:'2026-10-28T16:00:00.000Z'}),'2026-10-29');
  for(const identity of [null,{status:'unregistered'},{...verified,status:'unverified'},{...verified,publicationState:'local-committed'},{...verified,verifiedAt:null},{...verified,verifiedAt:'invalid'}])assert.equal(catalogReadbackDate(identity),null);
+});
+
+test('minimum-only selection ignores legacy upper values but enforces no-max024 reader floor',()=>{
+ const rawState=item=>({...state(),v4Catalog:{schemaVersion:4,plugins:[item]}});
+ for(const maximum of ['0.2.0','0.2.1','0.3.0']){const current=entry('rivetin-ipmi-redirection','0.1.4',2);current.compatibility.frameworkMaxVersionExclusive=maximum;for(const version of ['0.2.0','0.3.0','1.0.0'])assert.equal(selectPluginReleases(current.id,state([current]),version).release,current);}
+ const fresh=entry('rivetin-ipmi-redirection','0.1.4',2);delete fresh.compatibility.frameworkMaxVersionExclusive;fresh.compatibility.frameworkMinVersion='0.2.4';assert.equal(selectPluginReleases(fresh.id,state([fresh]),'0.2.3').release,null);assert.equal(selectPluginReleases(fresh.id,state([fresh]),'0.2.4').release,fresh);assert.equal(selectPluginReleases(fresh.id,state([fresh]),'1.0.0').release,fresh);fresh.compatibility.frameworkMinVersion='0.2.3';assert.throws(()=>state([fresh]),/COMPATIBILITY/u);assert.equal(selectPluginReleases(fresh.id,rawState(fresh),'1.0.0').release,null);
+ for(const value of ['bad',' 0.3.0',null,undefined]){const malformed=entry('rivetin-ipmi-redirection','0.1.4',2);malformed.compatibility.frameworkMaxVersionExclusive=value;assert.throws(()=>state([malformed]),/COMPATIBILITY/u);assert.equal(selectPluginReleases(malformed.id,rawState(malformed),'1.0.0').release,null);}
+ const wrongApi=entry('rivetin-ipmi-redirection','0.1.4',2);wrongApi.compatibility.frameworkApi=2;assert.throws(()=>state([wrongApi]),/COMPATIBILITY/u);assert.equal(selectPluginReleases(wrongApi.id,rawState(wrongApi),'0.2.4').release,null);
 });

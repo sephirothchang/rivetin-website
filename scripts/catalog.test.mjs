@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, writeFile, readFile, rm, symlink } from 'node:fs/promis
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importCatalog, publicCatalogState, copyPublicCatalog } from './catalog-files.mjs';
-import { sha256, packagePath, validateCatalog, validateTransition, MAX_INDEX_BYTES } from './catalog-contract.mjs';
+import { sha256, packagePath, validateCatalog, validateTransition, MAX_INDEX_BYTES, compatibility as validateLegacyCompatibility } from './catalog-contract.mjs';
 import { download } from './readback-catalog.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
@@ -79,4 +79,8 @@ test('HTTPS readback verifies real response bytes, exact receipt fields, redirec
   await assert.rejects(download('/catalog/plugins.json',expected,MAX_INDEX_BYTES,response('<html>',200,'text/html')),/CONTENT_TYPE/u);
   await assert.rejects(download('/catalog/plugins.json',expected,MAX_INDEX_BYTES,response('{}')),/HASH/u);
   await assert.rejects(download('/catalog/plugins.json',expected,2,response()),/SIZE/u);
+});
+
+test('legacy v3 metadata treats upper as syntax only without imposing schema2 readerfloor on old declarations',()=>{
+ const old={frameworkApi:1,tower:'Fixture only',towerBuilds:['4.9.0'],frameworkMinVersion:'0.2.0'};assert.equal(validateLegacyCompatibility(old),old);assert.doesNotThrow(()=>validateLegacyCompatibility({...old,frameworkMinVersion:'0.4.0',frameworkMaxVersionExclusive:'0.2.0'}));assert.throws(()=>validateLegacyCompatibility({...old,frameworkMaxVersionExclusive:'bad'}),/COMPATIBILITY/u);assert.throws(()=>validateLegacyCompatibility({...old,frameworkApi:2}),/COMPATIBILITY/u);
 });

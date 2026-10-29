@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import { exact, fail, validId, validVersion, validHash, packagePath, compareVersions, validatePackage } from './catalog-contract.mjs';
+import { exact, fail, validId, validVersion, validHash, packagePath, compareVersions, validatePackage, validSchema2Minimum } from './catalog-contract.mjs';
 
 export const V4_INDEX_PATH='/catalog/v4/plugins.json';
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
@@ -10,7 +10,7 @@ const buildList=value=>Array.isArray(value)&&value.length>0&&value.length<=20&&n
 const fields=['id','version','frameworkApi','status','downloadPath','sha256','name','description','author','license','permissions','compatibility'];
 export function validateV4Compatibility(value){
   const allowed=['schemaVersion','frameworkApi','tower','towerBuilds','frameworkMinVersion','frameworkMaxVersionExclusive','smtx'];
-  if(!object(value)||Object.keys(value).some(key=>!allowed.includes(key))||value.schemaVersion!==2||value.frameworkApi!==1||!text(value.tower,120)||!buildList(value.towerBuilds)||!validVersion(value.frameworkMinVersion)||!validVersion(value.frameworkMaxVersionExclusive)||compareVersions(value.frameworkMinVersion,value.frameworkMaxVersionExclusive)>=0)fail('CATALOG_V4_COMPATIBILITY_INVALID');
+  if(!object(value)||Object.keys(value).some(key=>!allowed.includes(key))||value.schemaVersion!==2||value.frameworkApi!==1||!text(value.tower,120)||!buildList(value.towerBuilds)||!validSchema2Minimum(value))fail('CATALOG_V4_COMPATIBILITY_INVALID');
   if(value.smtx!==undefined&&value.smtx!=='none'&&(!exact(value.smtx,['product','scope','builds'])||value.smtx.product!=='SMTX_OS'||value.smtx.scope!=='all-managed-product-clusters'||!buildList(value.smtx.builds)))fail('CATALOG_V4_COMPATIBILITY_INVALID');
   return value;
 }

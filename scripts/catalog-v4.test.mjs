@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { sha256, packagePath, validateCatalog, validatePackage } from './catalog-contract.mjs';
 import { importCatalog, publicCatalogState, copyPublicCatalog } from './catalog-files.mjs';
-import { validateV4Catalog, validateV4Package, V4_INDEX_PATH } from './catalog-v4-contract.mjs';
+import { validateV4Catalog, validateV4Package, validateV4Compatibility, validateV4Transition, V4_INDEX_PATH } from './catalog-v4-contract.mjs';
 import { frozenV4Drop, stageV4 } from './catalog-v4-staging.mjs';
 import { readbackV4 } from './readback-catalog-v4.mjs';
 import { importV4, recoverV4 } from './import-catalog-v4.mjs';
@@ -44,7 +44,7 @@ test('v4 requires strict compatibility even for draft; old and new schemas canno
   assert.throws(()=>validateCatalog({schemaVersion:4,plugins:[item]}),/V3_REQUIRED/u);
   assert.throws(()=>validateV4Catalog({schemaVersion:3,plugins:[item]}),/V4_REQUIRED/u);
   const draft={...item,status:'draft',downloadPath:null,sha256:null};
-  for(const change of [{compatibility:legacyCompat},{compatibility:{...strictCompat,schemaVersion:1}},{compatibility:{...strictCompat,unknown:true}},{compatibility:{...strictCompat,towerBuilds:[]}},{compatibility:{...strictCompat,frameworkMinVersion:'0.3.0'}},{compatibility:{...strictCompat,frameworkMaxVersionExclusive:undefined}}])assert.throws(()=>validateV4Catalog({schemaVersion:4,plugins:[{...draft,...change}]}),/V4_COMPATIBILITY/u);
+  for(const change of [{compatibility:legacyCompat},{compatibility:{...strictCompat,schemaVersion:1}},{compatibility:{...strictCompat,unknown:true}},{compatibility:{...strictCompat,towerBuilds:[]}},{compatibility:{...strictCompat,frameworkMaxVersionExclusive:undefined}}])assert.throws(()=>validateV4Catalog({schemaVersion:4,plugins:[{...draft,...change}]}),/V4_COMPATIBILITY/u);
 });
 test('SMTX omitted and none are equivalent; exact scope and nonempty builds enforced',()=>{
   const f=fixture('rivetin-new','0.2.0',strictCompat);
@@ -264,4 +264,12 @@ test('v3 writer cannot acquire shared lock between internal rollback and owner r
   unblock();await assert.rejects(operation,/injected/u);
   assert.ok(await importCatalog({siteRoot:site,dropRoot:v3.location,stageHash:sha256(v3.stage)}));
   assert.deepEqual((await publicCatalogState(site)).indexRaw,v3.index);
+});
+
+test('schema2 minimum-only metadata accepts optional max at024 floor, keeps old raw syntax and independent gates',()=>{
+ const noMax={...strictCompat,frameworkMinVersion:'0.2.4'};delete noMax.frameworkMaxVersionExclusive;assert.equal(validateV4Compatibility(noMax),noMax);const sample=fixture('rivetin-new','0.2.4',noMax);assert.doesNotThrow(()=>validateV4Package(sample.raw,sample.entry));
+ for(const minimum of ['0.2.0','0.2.3'])assert.throws(()=>validateV4Compatibility({...noMax,frameworkMinVersion:minimum}),/V4_COMPATIBILITY/u);
+ const inverted={...strictCompat,frameworkMinVersion:'0.4.0',frameworkMaxVersionExclusive:'0.2.0'};assert.equal(validateV4Compatibility(inverted),inverted);assert.equal(inverted.frameworkMaxVersionExclusive,'0.2.0');
+ for(const change of [{frameworkApi:2},{towerBuilds:[]},{smtx:{product:'SMTX_OS',scope:'wrong',builds:['4.9.0']}},{frameworkMaxVersionExclusive:null},{frameworkMaxVersionExclusive:undefined},{frameworkMaxVersionExclusive:'v0.3.0'}])assert.throws(()=>validateV4Compatibility({...noMax,...change}),/V4_COMPATIBILITY/u);
+ const old=fixture('rivetin-new','0.2.0',strictCompat).entry,next=structuredClone(old);next.compatibility.frameworkMaxVersionExclusive='9.0.0';assert.throws(()=>validateV4Transition({plugins:[old]},{plugins:[next]}),/SAME_VERSION_IMMUTABLE/u,'semantic upper removal never permits rewriting same-version raw metadata');
 });

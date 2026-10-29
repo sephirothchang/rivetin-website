@@ -20,7 +20,7 @@ export const extensionCopy = [
     category: 'infrastructure', icon: 'terminal', status: 'Collection unverified',
     description: 'Review and authorize shared, controlled collection tasks.',
     capabilities: ['Edit explicit host, cluster and global connection drafts, with host inventory selection.', 'Review each consumer’s structured operations, targets and schedule before approval.', 'Revoke approvals when the command, version, target, schedule or channel configuration changes.'],
-    detail: "Version 0.1.2 completed limited read-only interface checks with Rivetin 0.2.2 while the channel remained off. These checks did not execute SSH connections, host commands, collection, approval, migration or cross-day schedules. Those operations remain pending real-environment testing. The historical v3 package remains 0.1.1 for the 0.1 framework line; current download availability follows the published v4 catalog.",
+    detail: "Version 0.1.2 completed limited read-only interface checks with Rivetin 0.2.2 while the channel remained off. These checks did not execute SSH connections, host commands, collection, approval, migration or cross-day schedules. The historical v3 package remains 0.1.1 for the 0.1 framework line; current download availability follows the published v4 catalog. With Rivetin 0.2.4, one controlled saved host completed one built-in host.identity review, explicit one-use approval and fixed-command execution, with the original result query matching its persisted receipt. That result does not validate SMART consumer execution, general command registration or all hosts. Migration, valid SMART health samples, cross-day collection and real revocation or I/O fault handling remain unverified.",
   },
   {
     key: 'smart', enhancement: 'Disk health', id: 'rivetin-disk-smart-info', reviewedVersion: '0.1.6', name: 'Disk SMART',
@@ -34,14 +34,14 @@ export const extensionCopy = [
     category: 'infrastructure', icon: 'network', status: 'Local demo',
     description: 'Explore topology and edit network drafts in a local canvas.',
     capabilities: ['Explore VM, distributed-switch, host and physical-switch relationships.', 'Create VDS and virtual-network drafts and review host uplink changes.', 'Exercise protected-network checks and a simulated confirm-or-rollback flow.'],
-    detail: 'This is a standalone local demonstration with synthetic data. Local validation covers keyboard movement of a VDS together with its child networks and updated connections. Draft creation, uplink edits and timed rollback remain simulations, not live network changes. Source publication does not establish a standard plugin release or CloudTower acceptance; real installation remains gated.',
+    detail: 'This is a standalone local demonstration with synthetic data. Local validation covers keyboard movement of a VDS together with its child networks and updated connections. Draft creation, uplink edits and timed rollback remain simulations, not live network changes. Source publication does not establish a standard plugin release or CloudTower acceptance; real installation remains gated. CloudTower installation work is in progress locally; no real deployment or installed-feature acceptance has been completed.',
   },
   {
     key: 'converter', enhancement: 'Security policy', id: 'rivetin-security-policy-converter', reviewedVersion: '0.1.1', name: 'Policy Converter',
     category: 'utilities', icon: 'policy', status: 'Offline preview',
     description: 'Turn inventory JSON and traffic CSV into policy review drafts.',
     capabilities: ['Import normalized VM inventory and traffic CSV with explicit column mapping.', 'Resolve exact IPv4 identities and review label-pair MONITOR candidates.', 'Export a manually confirmed rivetin-policy-review-v1 review draft.'],
-    detail: 'The exported JSON is a project-specific review draft, not an Everoute API request or directly importable policy. Inputs stay in memory; only the saved label key uses shared configuration. The extension does not make AI calls, write labels, deploy policies or enable WORK mode. Source updates remain an offline preview, with no published standard plugin package or live CloudTower/Everoute acceptance.',
+    detail: 'The exported JSON is a project-specific review draft, not an Everoute API request or directly importable policy. Inputs stay in memory; only the saved label key uses shared configuration. The extension does not make AI calls, write labels, deploy policies or enable WORK mode. Source updates remain an offline preview, with no published standard plugin package or live CloudTower/Everoute acceptance. Planned CloudTower integration adds Policy Converter to the Everoute left navigation and opens the full tool in the right main content area. That local integration work is not yet deployed or accepted.',
   },
 ];
 
