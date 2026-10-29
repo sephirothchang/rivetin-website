@@ -3,10 +3,10 @@
   "reviewedOn": "2026-10-29",
   "repository": "https://github.com/sephirothchang/rivetin",
   "repositoryVisibility": "private",
-  "frameworkVersion": "0.2.4",
+  "frameworkVersion": "0.2.6",
   "frameworkSourcePublication": {
-    "version": "0.2.4",
-    "commit": "c86aec1487d15356f54a3d64291d9afdf6f741c2",
+    "version": "0.2.6",
+    "commit": "aeb4387515a085e5d1b7b87bf38d79c73662d2d7",
     "verifiedOn": "2026-10-29"
   },
   "publicInstallerAvailable": false,
@@ -18,13 +18,13 @@
     "frameworkVersion": "0.2.0",
     "reviewedOn": "2026-10-28",
     "reference": "docs/0.2-validation.md",
-    "documentSHA256": "fd171625d70befa4408e0c9d7dae75e80237c9b112f9df6ebacb73fb802fb3d8",
+    "documentSHA256": "239626076f7ffcdf3516dc25bebf8bfbb182450a23f5fb4cb6eb476952f147de",
     "scope": "CloudTower 4.9.0 development/test environment only; not a production or all-version guarantee."
   },
   "catalogPublication": {
     "v3": 3,
-    "v4": 4,
-    "uniqueExtensions": 4
+    "v4": 6,
+    "uniqueExtensions": 6
   },
   "installerProfiles": [
     {
@@ -159,38 +159,59 @@
     },
     {
       "id": "rivetin-network-topology",
-      "version": "0.1.0",
-      "manifestName": "Network topology editor (local preview)",
+      "version": "0.1.3",
+      "manifestName": "Network topology visual editor",
       "frameworkApi": 1,
-      "declaredTowerBuilds": [],
+      "declaredTowerBuilds": [
+        "4.9.0"
+      ],
       "compatibility": {
+        "schemaVersion": 2,
         "frameworkApi": 1,
-        "tower": "Local standalone demo only; live CloudTower compatibility has not been validated.",
-        "towerBuilds": []
+        "frameworkMinVersion": "0.2.6",
+        "frameworkMaxVersionExclusive": "0.3.0",
+        "tower": "CloudTower 4.9.0 target; topology work-page integration pending validation.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
       },
       "catalogReleases": {
-        "v4": null,
+        "v4": {
+          "version": "0.1.3",
+          "status": "published"
+        },
         "v3": null
       },
-      "sourcePackageFilename": "rivetin-network-topology-0.1.0.rivetin.json"
+      "sourcePackageFilename": "rivetin-network-topology-0.1.3.rivetin.json"
     },
     {
       "id": "rivetin-security-policy-converter",
-      "version": "0.1.1",
-      "manifestName": "Security policy converter (offline preview)",
+      "version": "0.1.4",
+      "manifestName": "Security policy converter",
       "frameworkApi": 1,
-      "declaredTowerBuilds": [],
+      "declaredTowerBuilds": [
+        "4.9.0"
+      ],
       "compatibility": {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "frameworkApi": 1,
-        "tower": "Offline preview only; no live CloudTower or Everoute build has been validated.",
-        "towerBuilds": []
+        "frameworkMinVersion": "0.2.6",
+        "frameworkMaxVersionExclusive": "0.3.0",
+        "tower": "Candidate UI target: CloudTower 4.9.0; native workpage acceptance pending. No live Everoute policy operations.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
       },
       "catalogReleases": {
-        "v4": null,
+        "v4": {
+          "version": "0.1.4",
+          "status": "published"
+        },
         "v3": null
       },
-      "sourcePackageFilename": "rivetin-security-policy-converter-0.1.1.rivetin.json"
+      "sourcePackageFilename": "rivetin-security-policy-converter-0.1.4.rivetin.json"
     }
   ]
 }

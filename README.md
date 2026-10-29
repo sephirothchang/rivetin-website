@@ -38,10 +38,14 @@ Rivetin 0.2 uses the [v4 catalog](https://rivetin.dev/catalog/v4/plugins.json):
 
 | Extension | v4 release | Compatibility |
 | :--- | :--- | :--- |
-| [IPMI Redirection](https://rivetin.dev/#extension-ipmi) | `0.1.4` | Rivetin >=0.2.0 and <0.3.0; CloudTower 4.9.0, limited development/test scope below |
-| [Context Menu](https://rivetin.dev/#extension-context) | `0.5.9` | Same framework range and declared Tower build; controlled read-only scope below |
-| [SSH Channel](https://rivetin.dev/#extension-ssh) | `0.1.2` | Same framework range and declared Tower build; collection remains unverified |
-| [Disk SMART](https://rivetin.dev/#extension-smart) | `0.1.6` | Same framework range and declared Tower build; real samples and execution remain pending |
+| [IPMI Redirection](https://rivetin.dev/#extension-ipmi) | `0.1.4` | Rivetin >=0.2.0; CloudTower 4.9.0; limited development/test scope below |
+| [Context Menu](https://rivetin.dev/#extension-context) | `0.5.9` | Rivetin >=0.2.0; CloudTower 4.9.0; controlled read-only scope below |
+| [SSH Channel](https://rivetin.dev/#extension-ssh) | `0.1.2` | Rivetin >=0.2.0; CloudTower 4.9.0; collection remains unverified |
+| [Disk SMART](https://rivetin.dev/#extension-smart) | `0.1.6` | Rivetin >=0.2.0; CloudTower 4.9.0; real samples and execution remain pending |
+| [Network Topology](https://rivetin.dev/#extension-topology) | `0.1.3` | Rivetin >=0.2.6; CloudTower 4.9.0; bounded Chinese read-only topology/layout checks; real transactions, worker and rollback are not implemented |
+| [Policy Converter](https://rivetin.dev/#extension-converter) | `0.1.4` | Rivetin >=0.2.6; CloudTower 4.9.0; bounded Chinese tool-page and manual review-export checks; no label, policy or WORK writes |
+
+Framework minimums are inclusive. From framework 0.2.4 onward, deprecated maximum metadata is retained only as an old-reader syntax carrier and does not impose a runtime upper bound. Framework API, exact Tower build and SMTX conditions remain independent.
 
 Three historical v3 packages remain in the [legacy catalog](https://rivetin.dev/catalog/plugins.json) for the 0.1 framework line:
 
@@ -51,12 +55,12 @@ Three historical v3 packages remain in the [legacy catalog](https://rivetin.dev/
 | [SSH Channel](https://rivetin.dev/#extension-ssh) | `0.1.1` | Shared, controlled collection and approvals |
 | [Disk SMART](https://rivetin.dev/#extension-smart) | `0.1.3` | Physical disk SMART information and history |
 
-**In development**
+**Remaining work for packages in the v4 issuance**
 
 | Extension | Version | Status |
 | :--- | :--- | :--- |
-| [Network Topology](https://rivetin.dev/#extension-topology) | `0.1.0` | Local demo; no accepted CloudTower build |
-| [Policy Converter](https://rivetin.dev/#extension-converter) | `0.1.1` | Offline source preview; no accepted CloudTower build or public package |
+| [Network Topology](https://rivetin.dev/#extension-topology) | `0.1.3` | Association drafts, dirty guards and live language switching await real-environment testing. Real network transactions, an independent persistent worker and rollback remain unimplemented. |
+| [Policy Converter](https://rivetin.dev/#extension-converter) | `0.1.4` | Other live languages remain untested. Label writes, policy deployment and WORK mode are not implemented. |
 
 ## Compatibility
 
@@ -65,7 +69,7 @@ Historical v3 packages declare **CloudTower 4.9.0** and **framework API 1**. The
 The v4 catalog is the source of truth for Rivetin 0.2 package versions, checksums and compatibility declarations; the legacy catalog retains the historical 0.1 releases. Framework installers are not publicly available. This overview reflects the reviewed website and catalog snapshot of October 29, 2026.
 
 
-The reviewed framework source remains **0.2.2**. IPMI **0.1.4**, SSH Channel **0.1.2**, Disk SMART **0.1.6** and Context Menu **0.5.9** are reviewed against the [plugin source snapshot 0943fd9f51fe](https://github.com/sephirothchang/rivetin/commit/0943fd9f51fe6e2ec5177ff31c446909f861597c). Source synchronization does not establish market admission. The [v4 catalog](https://rivetin.dev/catalog/v4/plugins.json) is the source for Rivetin 0.2 package releases. A local fixed candidate does not establish market admission or live acceptance.
+The reviewed source snapshot includes framework **0.2.6**. The framework source is published at [aeb4387515a0](https://github.com/sephirothchang/rivetin/commit/aeb4387515a085e5d1b7b87bf38d79c73662d2d7). IPMI **0.1.4**, SSH Channel **0.1.2**, Disk SMART **0.1.6** and Context Menu **0.5.9** are reviewed against the [plugin source snapshot aeb4387515a0](https://github.com/sephirothchang/rivetin/commit/aeb4387515a085e5d1b7b87bf38d79c73662d2d7). Source synchronization does not establish market admission. The [v4 catalog](https://rivetin.dev/catalog/v4/plugins.json) is the source for Rivetin 0.2 package releases. A local fixed candidate does not establish market admission or live acceptance.
 
 The [historical 0.2.0 validation record](https://github.com/sephirothchang/rivetin/blob/main/docs/0.2-validation.md) covers an earlier fixed candidate, a controlled Windows amd64 CLI upgrade and the Chinese component-status page in one CloudTower 4.9.0 development/test environment. It does not validate the current working tree, new plugin combinations, device-policy v2, real SMART samples or cross-day collection.
 
@@ -95,7 +99,9 @@ When the referenced historical validation document changes, review its diff and 
 
 SSH 0.1.2 and Disk SMART 0.1.6 completed limited read-only checks while their collection channels stayed off. Those historical checks did not cover connections, host commands, approval or migration; real SMART samples, collection, persistent history and cross-day execution remain pending; the SMART metric panel body was not accepted. IPMI 0.1.4 also completed a separate read-only 0.2.2 combination check with its package bytes unchanged, without real BMC/KVM/clipboard actions.
 
-The v4 issuance is **ML-V4-261029.0**, bound to the exact [immutable catalog snapshot](https://rivetin.dev/catalog/v4/releases/ML-V4-261029.0/plugins.json) and [release metadata](https://rivetin.dev/catalog/v4/releases/ML-V4-261029.0/release.json). Website commit `5e301b6b2e8d89d6c5a283b2642ed1fe017faad1` completed Pages deployment. Canonical HTTPS readback verified the four catalog/metadata objects and three changed packages on October 29, 2026 in Asia/Shanghai (`2026-10-28T20:37:23.723Z`); the unchanged IPMI package was checked separately. The source ledger is now `verified`. The confirmation view was subsequently published in website commit `3f8cb6174c1694e284fce9fac9aff9cc319c2561`; this update retains the same publication identity and original asset bytes. Catalog verification does not expand any plugin's documented test scope or establish framework runtime consumption of the ML identifier.
+The current six-package v4 issuance is **ML-V4-261029.1**, bound to the [immutable catalog snapshot](https://rivetin.dev/catalog/v4/releases/ML-V4-261029.1/plugins.json) and [release metadata](https://rivetin.dev/catalog/v4/releases/ML-V4-261029.1/release.json). Its publisher transaction is `local-committed`: the local catalog, packages, metadata and source ledger have committed consistently. This does not establish website Git/Pages publication or HTTPS verification. Online publication and readback remain pending; this issuance has no verification timestamp yet. The earlier ML-V4-261029.0 snapshot and fixed package bytes remain retained.
+
+The earlier four-package v4 issuance was **ML-V4-261029.0**, bound to the exact [immutable catalog snapshot](https://rivetin.dev/catalog/v4/releases/ML-V4-261029.0/plugins.json) and [release metadata](https://rivetin.dev/catalog/v4/releases/ML-V4-261029.0/release.json). Website commit `5e301b6b2e8d89d6c5a283b2642ed1fe017faad1` completed Pages deployment. Canonical HTTPS readback verified the four catalog/metadata objects and three changed packages on October 29, 2026 in Asia/Shanghai (`2026-10-28T20:37:23.723Z`); the unchanged IPMI package was checked separately. That earlier issuance’s source-ledger record is `verified`. The confirmation view was subsequently published in website commit `3f8cb6174c1694e284fce9fac9aff9cc319c2561`; that confirmation update retained the same publication identity and original asset bytes. Catalog verification does not expand any plugin's documented test scope or establish framework runtime consumption of the ML identifier.
 
 
 ## Framework 0.2.4 and controlled identity evidence
@@ -110,6 +116,17 @@ A separate controlled single-host built-in identity check passed with Rivetin 0.
 
 From framework 0.2.4, framework-version eligibility uses the inclusive minimum only. Valid legacy maximum metadata is preserved raw for immutable package/catalog identity but has no runtime upper-gate meaning. New schema 2 declarations without that field require minimum 0.2.4 or later; validation rejects lower declarations and never silently clamps them. API 1, exact Tower and SMTX conditions remain independent. Legacy v3 declarations retain their existing optional-minimum format.
 
-Production continues to serve 0.2.2/0.2.3 readers. The existing ML publication, ledger and four packages keep their exact bytes and old syntax carrier. A mixed no-maximum V4 catalog can make an old parser reject the whole catalog; moving production requires an explicit reader-floor decision. This update introduces no V5, second feed or new ML publication.
+During the earlier 0.2.4 minimum-version-only update, production continued to serve 0.2.2/0.2.3 readers, retaining the existing ML0 record, four package bytes and legacy syntax carrier. That historical update introduced no V5, second feed or new ML publication. The subsequent six-entry issuance is ML-V4-261029.1 and is currently local-committed, as recorded above. Its HTTPS-verification state is recorded only after the corresponding deployment and readback. A mixed no-maximum V4 catalog can make an old parser reject the whole catalog; omitting that field in production still requires an explicit reader-floor decision.
 
-Policy Converter navigation/full-page integration and real Network Topology installation are local work in progress, not deployed or accepted features. They remain separate from this framework/SSH/minimum-version update.
+At the time of that earlier 0.2.4 framework/SSH/minimum-version update, Policy Converter navigation/full-page integration and real Network Topology installation were local work in progress and had not yet been deployed or accepted. The later bounded 0.2.6 results recorded below supersede that historical installation status.
+
+
+## Framework 0.2.6 and plugin UI entries
+
+Framework source 0.2.6 is published at [aeb4387515a0](https://github.com/sephirothchang/rivetin/commit/aeb4387515a085e5d1b7b87bf38d79c73662d2d7). Plugin declarations own pages, actions and entry labels; the framework supplies semantic slots, host adapters, narrow context, lifecycle and leave guards. Adding an entry to an existing slot only requires a plugin update.
+
+Policy Converter 0.1.4 completed bounded Chinese entry, workpage, cancel/discard, empty-reentry, sample-conversion and actual 2579-byte review-export checks. The output has canDeploy=false and MONITOR policies; no shared configuration, label, policy or WORK operation was submitted. Other languages were not switched live. Forty-four shared warnings and one initialization host-page HTTP 504 remain recorded, with an unconfirmed endpoint and cause.
+
+Network Topology 0.1.3 completed bounded Chinese native-entry, current-cluster fourteen-card/relationship, parent/child layout +10/+40, clean-return and reentry-reset checks. Purpose mapping remains an unconfirmed concern; association drafts, dirty guards and live language switching remain pending. Forty-five shared warnings and two initialization native-bundle HTTP 504 errors have unproven endpoint, cause and plugin relationship. Real network transactions, an independent persistent worker and server rollback are not implemented.
+
+Package availability follows the v4 catalog; source publication, catalog identity and each plugin acceptance scope are separate. Existing fixed packages and earlier immutable catalog snapshots retain their original bytes.
