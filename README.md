@@ -47,14 +47,6 @@ Rivetin 0.2 uses the [v4 catalog](https://rivetin.dev/catalog/v4/plugins.json):
 
 Framework minimums are inclusive. From framework 0.2.4 onward, deprecated maximum metadata is retained only as an old-reader syntax carrier and does not impose a runtime upper bound. Framework API, exact Tower build and SMTX conditions remain independent.
 
-Three historical v3 packages remain in the [legacy catalog](https://rivetin.dev/catalog/plugins.json) for the 0.1 framework line:
-
-| Extension | Version | What it adds |
-| :--- | :--- | :--- |
-| [IPMI Redirection](https://rivetin.dev/#extension-ipmi) | `0.1.2` | Host BMC access and vendor protocol settings |
-| [SSH Channel](https://rivetin.dev/#extension-ssh) | `0.1.1` | Shared, controlled collection and approvals |
-| [Disk SMART](https://rivetin.dev/#extension-smart) | `0.1.3` | Physical disk SMART information and history |
-
 **Remaining work for packages in the v4 issuance**
 
 | Extension | Version | Status |
@@ -64,9 +56,7 @@ Three historical v3 packages remain in the [legacy catalog](https://rivetin.dev/
 
 ## Compatibility
 
-Historical v3 packages declare **CloudTower 4.9.0** and **framework API 1**. Their old compatibility declarations do not pass the Rivetin 0.2 gate. Disk SMART 0.1.3 requires Rivetin **0.1.2 or later** on the 0.1 framework line; SSH Channel requires its framework broker and host-specific validation. A declared version does not guarantee support for every build or production environment. Live host SMART collection remains unverified.
-
-The v4 catalog is the source of truth for Rivetin 0.2 package versions, checksums and compatibility declarations; the legacy catalog retains the historical 0.1 releases. Framework installers are not publicly available. This overview reflects the reviewed website and catalog snapshot of October 29, 2026.
+The v4 catalog is the public source for plugin versions, checksums and compatibility declarations. Framework installers are not publicly available. This overview reflects the reviewed website and catalog snapshot of October 29, 2026. Live host SMART collection remains unverified.
 
 
 The reviewed source snapshot includes framework **0.2.6**. The framework source is published at [aeb4387515a0](https://github.com/sephirothchang/rivetin/commit/aeb4387515a085e5d1b7b87bf38d79c73662d2d7). IPMI **0.1.4**, SSH Channel **0.1.2**, Disk SMART **0.1.6** and Context Menu **0.5.9** are reviewed against the [plugin source snapshot aeb4387515a0](https://github.com/sephirothchang/rivetin/commit/aeb4387515a085e5d1b7b87bf38d79c73662d2d7). Source synchronization does not establish market admission. The [v4 catalog](https://rivetin.dev/catalog/v4/plugins.json) is the source for Rivetin 0.2 package releases. A local fixed candidate does not establish market admission or live acceptance.
@@ -80,7 +70,9 @@ Run `npm run test:content`, `npm run test:catalog`, `npm run build:production`, 
 `node scripts/sync-project.mjs --reviewed-on YYYY-MM-DD --check` checks source metadata without writing. After editorial review, omit `--check` to refresh source metadata; it preserves the separately reviewed historical acceptance and never establishes a current deployment or market release. A changed validation-document fingerprint or source version requires a new review. Fixed candidate admission and public catalog imports remain separate release steps.
 
 
-The website selects a primary download only from a validated v4 `published` entry whose framework range matches the reviewed framework version. Historical v3 packages keep separate version labels and links; they never become a fallback download for Rivetin 0.2. Directory counts stay separate, and shared plugin IDs count once. Availability and examples are generated from the validated public catalogs when building.
+The website generates counts, availability and download links from the validated v4 catalog. The primary download is an eligible v4 `published` entry with a formal `X.Y.Z` version. Reviewed source metadata and minimum framework declarations also accept `X.Y.Z-alpha.N`, `X.Y.Z-alpha.N.trial.code.M` and `X.Y.Z-beta`. Alpha and trial sequence numbers use unpadded positive decimal integers. A trial code is lowercase ASCII and can contain digits and hyphen-separated segments.
+
+The v3 index and packages outside the active index stay in the repository archive with their original bytes. Production output serves the active v4 index, its published packages and the v4 issuance metadata and snapshots. Historical source artifacts are available for audit.
 
 Context Menu 0.5.9 completed controlled first-open, route-revisit, object-specific initial-value and cancel checks, with the documented keyboard boundary at 1280 by 720. No resource change was saved. The 0.5.7 route-revisit failure, 0.5.8 review rejection and earlier 0.5.6 failure remain recorded. Local proposal previews use isolated directories and do not change the canonical public catalogs.
 
@@ -93,7 +85,7 @@ An earlier fixed framework 0.2.2 build was reported deployed and enabled by the 
 
 ## Catalog publication identity
 
-V4 publication identity is a separate sidecar and immutable snapshot, with a minimal source-controlled `catalog-release-ledger.json`; the strict v3/v4 catalog schemas and existing package bytes are unchanged. `ML-V4-YYMMDD.rev` uses the actual publisher transaction date in Asia/Shanghai and a decimal daily revision. The initial empty ledger assigns no official ID. Stage/check do not reserve IDs. Local issuance, HTTPS/Pages confirmation, plugin acceptance and framework runtime display remain separate. See [publisher operations and recovery](scripts/catalog-v4-operations.md) for exact request/output contracts and commands.
+V4 publication identity is a separate sidecar and immutable snapshot backed by the source-controlled `catalog-release-ledger.json`. The `ML-V4-YYMMDD.rev` identity uses the actual publisher transaction date in Asia/Shanghai and a decimal daily revision. Stage and check runs do not reserve IDs. Local issuance, HTTPS/Pages confirmation, plugin acceptance and framework runtime display remain separate. See [publisher operations and recovery](scripts/catalog-v4-operations.md) for exact request/output contracts and commands.
 
 When the referenced historical validation document changes, review its diff and scope before adding `--reviewed-history-sha256 <EXACT_SHA256>` to `sync:project`; the tool preserves the historical candidate/version/date and does not inherit newer acceptance into the current working tree. The reviewed hash transition is kept in ignored content-sync evidence.
 

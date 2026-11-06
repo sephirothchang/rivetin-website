@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
+import { compareReleaseVersions, parseReleaseVersion } from './release-version.mjs';
 
 export const SITE='https://rivetin.dev';
 export const INDEX_PATH='/catalog/plugins.json';
@@ -20,8 +21,8 @@ export const MINIMUM_ONLY_READER_VERSION='0.2.4';
 // This checks schema2 syntax/reader floor only. Runtime eligibility uses minimum,
 // while immutable package metadata keeps any deprecated field byte-for-byte.
 export function validSchema2Minimum(value){
-  return validVersion(value?.frameworkMinVersion)&&
-    (Object.hasOwn(value,'frameworkMaxVersionExclusive')?validVersion(value.frameworkMaxVersionExclusive):compareVersions(value.frameworkMinVersion,MINIMUM_ONLY_READER_VERSION)>=0);
+  return Boolean(parseReleaseVersion(value?.frameworkMinVersion))&&
+    (Object.hasOwn(value,'frameworkMaxVersionExclusive')?validVersion(value.frameworkMaxVersionExclusive):compareReleaseVersions(value.frameworkMinVersion,MINIMUM_ONLY_READER_VERSION)>=0);
 }
 export function packagePath(id,version){
   if(!validId(id)||!validVersion(version))fail('CATALOG_IDENTITY_INVALID');

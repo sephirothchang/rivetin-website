@@ -4,6 +4,7 @@ import { validateCatalog } from './catalog-contract.mjs';
 import { validateV4Catalog } from './catalog-v4-contract.mjs';
 import { catalogSummary, selectPluginReleases, catalogMetadata,catalogReleaseIdentity,catalogReadbackDate } from '../src/catalog-releases.mjs';
 import {reserveRelease,emptyReleaseLedger} from './catalog-release-contract.mjs';
+import { compareReleaseVersions, parseReleaseVersion } from './release-version.mjs';
 
 function entry(id, version, schema = 1, status = 'published') {
   return { id, version, frameworkApi: 1, status,
@@ -21,14 +22,14 @@ function state(current = [entry('rivetin-ipmi-redirection', '0.1.4', 2)]) {
     v4Catalog: validateV4Catalog({ schemaVersion: 4, plugins: current }) };
 }
 
-test('v4 published package is the primary download; v3 keeps its exact historical version', () => {
+test('only the active v4 catalog supplies download metadata and counts', () => {
   const selected = selectPluginReleases('rivetin-ipmi-redirection', state(), '0.2.1');
   assert.equal(selected.release.version, '0.1.4');
   assert.equal(selected.release.compatibility.schemaVersion, 2);
   assert.match(selected.release.downloadPath, /\/0\.1\.4\/rivetin-ipmi-redirection-0\.1\.4\.rivetin\.json$/u);
-  assert.equal(selected.legacyRelease.version, '0.1.2');
-  assert.deepEqual(catalogSummary(state()), { v3: 3, v4: 1, uniqueExtensions: 3 });
-  assert.deepEqual(catalogMetadata('rivetin-ipmi-redirection', state()), { v4: { version: '0.1.4', status: 'published' }, v3: { version: '0.1.2', status: 'published' } });
+  assert.equal(Object.hasOwn(selected,'legacyRelease'),false);
+  assert.deepEqual(catalogSummary(state()), { v4: 1 });
+  assert.deepEqual(catalogMetadata('rivetin-ipmi-redirection', state()), { v4: { version: '0.1.4', status: 'published' } });
 });
 
 for (const [name, current] of [['empty', []], ['draft', [entry('rivetin-ipmi-redirection', '0.1.4', 2, 'draft')]]]) {
@@ -36,7 +37,7 @@ for (const [name, current] of [['empty', []], ['draft', [entry('rivetin-ipmi-red
     const selected = selectPluginReleases('rivetin-ipmi-redirection', state(current), '0.2.1');
     assert.equal(selected.release, null);
     assert.equal(selected.currentRelease, null);
-    assert.equal(selected.legacyRelease.version, '0.1.2');
+    assert.deepEqual(selected, { release: null, currentRelease: null });
     assert.equal(catalogSummary(state(current)).v4, 0);
   });
 }
@@ -47,16 +48,30 @@ test('current framework minimum is inclusive and deprecated maximum never blocks
     const selected = selectPluginReleases('rivetin-ipmi-redirection', state(), version);
     assert.equal(selected.release, null);
     assert.equal(selected.currentRelease.version, '0.1.4');
-    assert.equal(selected.legacyRelease.version, '0.1.2');
   }
 });
 
 test('other legacy-only or source-only plugins never inherit the published IPMI download', () => {
   const legacy = selectPluginReleases('rivetin-ssh-channel', state(), '0.2.1');
   assert.equal(legacy.release, null);
-  assert.equal(legacy.legacyRelease.version, '0.1.1');
+  assert.deepEqual(catalogMetadata('rivetin-ssh-channel', state()), { v4: null });
   const sourceOnly = selectPluginReleases('rivetin-context-menu', state(), '0.2.1');
-  assert.deepEqual(sourceOnly, { currentRelease: null, legacyRelease: null, release: null });
+  assert.deepEqual(sourceOnly, { currentRelease: null, release: null });
+});
+test('source and compatibility versions use numeric prerelease precedence; public packages remain formal', () => {
+  const ordered=['0.2.17-alpha.9','0.2.17-alpha.9.trial.py312.2','0.2.17-alpha.9.trial.py312.10','0.2.17-alpha.10','0.2.17-beta','0.2.17'];
+  for(let i=1;i<ordered.length;i++)assert.equal(compareReleaseVersions(ordered[i-1],ordered[i]),-1);
+  for(const bad of ['0.2.17-alpha-09','0.2.17-alpha.09','0.2.17-alpha.0','0.2.17-alpha.9.trial.py312.01','0.2.17-beta.1','0.2.17-alpha.9\n','0.2.17+trial'])assert.equal(parseReleaseVersion(bad),null);
+  const active=entry('rivetin-ipmi-redirection','0.1.4',2);
+  active.compatibility.frameworkMinVersion='0.2.17-alpha.10';
+  delete active.compatibility.frameworkMaxVersionExclusive;
+  const catalog=state([active]);
+  assert.equal(selectPluginReleases(active.id,catalog,'0.2.17-alpha.9').release,null);
+  assert.equal(selectPluginReleases(active.id,catalog,'0.2.17-alpha.10').release,active);
+  assert.equal(selectPluginReleases(active.id,catalog,'0.2.17-alpha-10').release,null);
+  for(const prerelease of ['0.1.4-alpha.1','0.1.4-alpha.1.trial.py312.1','0.1.4-beta']) {
+    assert.throws(()=>state([entry(active.id,prerelease,2)]),/CATALOG_V4_ENTRY_INVALID/u);
+  }
 });
 test('catalog ID is separate from schema/plugin versions and bad optional metadata never changes package selection',()=>{
  const s=state(),before=selectPluginReleases('rivetin-ipmi-redirection',s,'0.2.2');assert.deepEqual(catalogReleaseIdentity(s),{status:'unregistered',publicationId:null});const raw=Buffer.from(JSON.stringify(s.v4Catalog)),p=reserveRelease(emptyReleaseLedger(),raw,'2026-10-29T00:00:00.000Z');p.ledger.releases[0].status='local-committed';p.ledger.currentPublicationId=p.record.publicationId;

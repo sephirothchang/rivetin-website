@@ -20,7 +20,7 @@ test('plugin copy keeps limited UI acceptance separate from failures, host execu
  assert.match(byId.ipmi.detail,/Real BMC access.*remain unverified/u);
  for(const key of ['ipmi','context','ssh','smart'])assert.ok(Object.hasOwn(messages,byId[key].detail),key+': reviewed Chinese scope required');
  const guide=readFileSync(new URL('../src/documentation.mjs',import.meta.url),'utf8');
- assert.match(guide,/historical v3 version 0\.1\.1 remains separate/u);
+ assert.doesNotMatch(guide,/catalog\/plugins\.json/u);
  assert.match(guide,/did not execute host connections, commands, collection, approval, migration or cross-day schedules/u);
  assert.doesNotMatch(guide,/Source 0\.1\.2 is a compatibility candidate/u);
 });

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createProjectSnapshot,withReviewedHistoricalFingerprint } from './project-snapshot.mjs';
 
 const history = { frameworkVersion: '0.2.0', reviewedOn: '2026-10-28', reference: 'docs/0.2-validation.md', documentSHA256: 'a'.repeat(64), scope: 'Historical controlled development/test acceptance only.' };
-const input = { reviewedOn: '2026-10-28', frameworkVersion: '0.2.1', extensions: [{ id: 'rivetin-example', version: '0.3.0', catalogReleases: { v4: null, v3: null } }], catalogPublication: { v3: 3, v4: 1, uniqueExtensions: 3 }, installerProfiles: [] };
+const input = { reviewedOn: '2026-10-28', frameworkVersion: '0.2.1', extensions: [{ id: 'rivetin-example', version: '0.3.0', catalogReleases: { v4: null } }], catalogPublication: { v4: 1 }, installerProfiles: [] };
 test('a changed validation document requires exact reviewed bytes and preserves the historical version, date and scope',()=>{
  const previous={historicalAcceptance:history},newHash='b'.repeat(64);assert.throws(()=>withReviewedHistoricalFingerprint(previous,newHash));assert.throws(()=>withReviewedHistoricalFingerprint(previous,newHash,'c'.repeat(64)));
  const reviewed=withReviewedHistoricalFingerprint(previous,newHash,newHash);assert.deepEqual(reviewed.previous.historicalAcceptance,{...history,documentSHA256:newHash});assert.equal(previous.historicalAcceptance.documentSHA256,history.documentSHA256);assert.equal(reviewed.changed,true);
@@ -25,7 +25,7 @@ test('legacy live flags and source versions cannot manufacture a historical acce
   assert.equal(snapshot.historicalAcceptance, null);
   assert.equal(Object.hasOwn(snapshot, 'liveFrameworkVersion'), false);
   assert.equal(Object.hasOwn(snapshot, 'liveRivetinAcceptance'), false);
-  assert.deepEqual(snapshot.extensions[0].catalogReleases, { v4: null, v3: null });
+  assert.deepEqual(snapshot.extensions[0].catalogReleases, { v4: null });
 });
 
 test('historical acceptance must carry a reviewed document fingerprint', () => {
@@ -40,6 +40,17 @@ test('published framework source is an explicit independent record, never inferr
   assert.equal(snapshot.frameworkVersion,'0.2.3');
   assert.throws(()=>createProjectSnapshot({...input,previous:{frameworkSourcePublication:{...publication,commit:'main'}}}));
   assert.throws(()=>createProjectSnapshot({...input,previous:{frameworkSourcePublication:{...publication,token:'private'}}}));
+});
+test('reviewed source snapshots accept canonical prereleases only', () => {
+  const publication={version:'0.2.17-alpha.7',commit:'f'.repeat(40),verifiedOn:'2026-11-06'};
+  const extensions=[{...input.extensions[0],version:'0.0.7-alpha.15.trial.py312.1'}];
+  const snapshot=createProjectSnapshot({...input,extensions,frameworkVersion:'0.2.17-alpha.7.trial.py312.1',previous:{frameworkSourcePublication:publication}});
+  assert.equal(snapshot.frameworkVersion,'0.2.17-alpha.7.trial.py312.1');
+  assert.equal(snapshot.extensions[0].version,extensions[0].version);
+  assert.deepEqual(snapshot.frameworkSourcePublication,publication);
+  assert.throws(()=>createProjectSnapshot({...input,frameworkVersion:'0.2.17-alpha-07',previous:{}}));
+  assert.throws(()=>createProjectSnapshot({...input,extensions:[{...extensions[0],version:'0.0.7-alpha-15'}],previous:{}}));
+  assert.throws(()=>createProjectSnapshot({...input,previous:{frameworkSourcePublication:{...publication,version:'0.2.17-alpha-07'}}}));
 });
 
 test('reviewed source, current deployment and historical acceptance stay independent', async () => {
@@ -76,7 +87,8 @@ test('context repair scope keeps actual failure history and downloads follow the
   assert.match(pages['index.html'], /v0\.5\.9 · Source/u);
   const current = extensions.find(item => item.key === 'ipmi');
   assert.equal(current.release.version, '0.1.4');
-  assert.equal(current.legacyRelease.version, '0.1.2');
+  assert.equal(current.legacyRelease, undefined);
+  assert.doesNotMatch(pages['index.html'], /catalog\/plugins\.json|rivetin-ipmi-redirection-0\.1\.2\.rivetin\.json/u);
 });
 
 test('023 built-in identity guidance preserves explicit ROOT approval, uncertain outcome and collection boundaries', async()=>{

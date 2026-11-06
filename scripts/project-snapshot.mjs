@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { parseReleaseVersion } from './release-version.mjs';
 export function withReviewedHistoricalFingerprint(previous,actualHash,reviewedHash){
   const copy=structuredClone(previous),history=copy.historicalAcceptance;
   if(!history)return {previous:copy,changed:false,previousSHA256:null,newSHA256:null};
@@ -12,12 +13,15 @@ export function withReviewedHistoricalFingerprint(previous,actualHash,reviewedHa
 // Source review never establishes deployment or release acceptance.
 export function createProjectSnapshot({ previous, reviewedOn, frameworkVersion, extensions, catalogPublication, installerProfiles }) {
   assert.match(reviewedOn, /^\d{4}-\d{2}-\d{2}$/u);
-  assert.match(frameworkVersion, /^\d+\.\d+\.\d+$/u);
+  assert.ok(parseReleaseVersion(frameworkVersion), 'Review framework release version.');
+  for(const extension of extensions){
+    assert.ok(parseReleaseVersion(extension.version), `Review ${extension.id} release version.`);
+  }
   const historicalAcceptance = previous.historicalAcceptance ?? null;
   const frameworkSourcePublication = previous.frameworkSourcePublication ?? null;
   if (frameworkSourcePublication) {
     assert.deepEqual(Object.keys(frameworkSourcePublication).sort(), ['commit','verifiedOn','version']);
-    assert.match(frameworkSourcePublication.version, /^\d+\.\d+\.\d+$/u);
+    assert.ok(parseReleaseVersion(frameworkSourcePublication.version), 'Review published framework source version.');
     assert.match(frameworkSourcePublication.commit, /^[a-f0-9]{40}$/u);
     assert.match(frameworkSourcePublication.verifiedOn, /^\d{4}-\d{2}-\d{2}$/u);
   }
