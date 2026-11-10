@@ -6,7 +6,7 @@ export const extensionCopy = [
     category: 'management', icon: 'link', status: 'Limited live validation',
     description: 'Open host BMC pages with shared vendor and protocol rules.',
     capabilities: ['Enhance the host overview IPMI address while preserving its copy control.', 'Set vendor and protocol defaults, with host and cluster exceptions.', 'Save functional settings centrally and keep personal display preferences separate.'],
-    detail: "Version 0.1.4 completed limited read-only checks with Rivetin 0.2.2, with its fixed package bytes unchanged. These checks are separate from the historical 0.2.0 draft save/discard, lifecycle and settings-restoration tests. Real BMC access, automatic login, KVM, clipboard execution, different administrators and switching between two populated BMC hosts remain unverified. The historical v3 package remains 0.1.2 for the 0.1 framework line.",
+    detail: "Version 0.1.4 completed limited read-only checks with Rivetin 0.2.2, with its fixed package bytes unchanged. These checks are separate from the historical 0.2.0 draft save/discard, lifecycle and settings-restoration tests. Real BMC access, automatic login, KVM, clipboard execution, different administrators and switching between two populated BMC hosts remain unverified.",
   },
   {
     key: 'context', enhancement: 'Resource actions', id: 'rivetin-context-menu', reviewedVersion: '0.5.9', name: 'Context Menu',
@@ -20,14 +20,14 @@ export const extensionCopy = [
     category: 'infrastructure', icon: 'terminal', status: 'Collection unverified',
     description: 'Review and authorize shared, controlled collection tasks.',
     capabilities: ['Edit explicit host, cluster and global connection drafts, with host inventory selection.', 'Review each consumer’s structured operations, targets and schedule before approval.', 'Revoke approvals when the command, version, target, schedule or channel configuration changes.'],
-    detail: "Version 0.1.2 completed limited read-only interface checks with Rivetin 0.2.2 while the channel remained off. These checks did not execute SSH connections, host commands, collection, approval, migration or cross-day schedules. The historical v3 package remains 0.1.1 for the 0.1 framework line; current download availability follows the published v4 catalog. With Rivetin 0.2.4, one controlled saved host completed one built-in host.identity review, explicit one-use approval and fixed-command execution, with the original result query matching its persisted receipt. That result does not validate SMART consumer execution, general command registration or all hosts. Migration, valid SMART health samples, cross-day collection and real revocation or I/O fault handling remain unverified.",
+    detail: "Version 0.1.2 completed limited read-only interface checks with Rivetin 0.2.2 while the channel remained off. These checks did not execute SSH connections, host commands, collection, approval, migration or cross-day schedules. Current downloads follow the published v4 catalog. With Rivetin 0.2.4, one controlled saved host completed one built-in host.identity review, explicit one-use approval and fixed-command execution, with the original result query matching its persisted receipt. That result does not validate SMART consumer execution, general command registration or all hosts. Migration, valid SMART health samples, cross-day collection and real revocation or I/O fault handling remain unverified.",
   },
   {
     key: 'smart', enhancement: 'Disk health', id: 'rivetin-disk-smart-info', reviewedVersion: '0.1.6', name: 'Disk SMART',
     category: 'infrastructure', icon: 'disk', status: 'Real samples pending',
     description: 'Compare physical-disk SMART metrics and snapshot changes.',
     capabilities: ['Present selected ATA, NVMe and SCSI metrics with risk explanations.', 'Compare an identity-checked snapshot with an earlier valid sample.', 'Keep unsupported, unavailable and stale samples distinct from healthy data.'],
-    detail: "Version 0.1.6 completed limited read-only interface checks with Rivetin 0.2.2 while collection remained off. The metric panel body, real SMART health samples, collection, persistent history and cross-day execution remain pending. Local tests use controlled inventory and sample substitutes. Missing real conditions do not prevent a release or establish a passed test; unavailable data must not be presented as healthy. The historical v3 package remains 0.1.3 for the 0.1 framework line.",
+    detail: "Version 0.1.6 completed limited read-only interface checks with Rivetin 0.2.2 while collection remained off. The metric panel body, real SMART health samples, collection, persistent history and cross-day execution remain pending. Local tests use controlled inventory and sample substitutes. Missing real conditions do not prevent a release or establish a passed test; unavailable data must not be presented as healthy.",
   },
   {
     key: 'topology', enhancement: 'Networking', id: 'rivetin-network-topology', reviewedVersion: '0.1.3', name: 'Network Topology',

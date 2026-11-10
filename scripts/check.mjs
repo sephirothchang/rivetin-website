@@ -2,7 +2,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import { publicCatalogState } from './catalog-files.mjs';
+import { activeCatalogFiles, publicCatalogState } from './catalog-files.mjs';
 import { catalogSummary, selectPluginReleases,catalogReleaseIdentity,catalogReadbackDate } from '../src/catalog-releases.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
@@ -13,10 +13,11 @@ const { extensionCopy } = await import('../src/extension-copy.mjs');
 let checkedLinks = 0;
 const production = process.argv.includes('--production');
 const catalogState=await publicCatalogState(path.dirname(root));
-for(const record of catalogState.packages)assert.deepEqual(await readFile(path.join(root,record.path.slice(1))),await readFile(path.join(catalogState.publicRoot,record.path.slice(1))),'Deployed package bytes must equal reviewed source bytes');
-if(catalogState.catalog)assert.deepEqual(await readFile(path.join(root,'catalog/plugins.json')),catalogState.indexRaw,'Deployed index bytes must equal reviewed source bytes');
-if(catalogState.v4Raw)assert.deepEqual(await readFile(path.join(root,'catalog/v4/plugins.json')),catalogState.v4Raw,'Deployed v4 index bytes must equal reviewed source bytes');
-for(const name of catalogState.releaseFiles||[])assert.deepEqual(await readFile(path.join(root,name)),await readFile(path.join(catalogState.publicRoot,name)),'Release metadata/snapshot bytes must equal the source ledger binding');
+const activeFiles=activeCatalogFiles(catalogState);
+for(const name of activeFiles)assert.deepEqual(await readFile(path.join(root,name)),await readFile(path.join(catalogState.publicRoot,name)),'Deployed catalog bytes must equal reviewed source bytes');
+for(const name of ['catalog/plugins.json',...catalogState.packages.map(record=>record.path.slice(1)).filter(name=>!activeFiles.includes(name))]){
+  await assert.rejects(stat(path.join(root,name)),{code:'ENOENT'},'Archived catalog files must stay out of the active site');
+}
 for (const [name, html] of documents) {
   const chinese=name.startsWith('zh/');
   assert.ok(html.includes(`<html lang="${chinese?'zh-CN':'en'}"`), `${name}: document language`);
@@ -85,7 +86,7 @@ if (production) {
 const summary=catalogSummary(catalogState);
 for(const html of [homepage,guide]) {
   assert.ok(html.includes(`<code data-catalog-v4-count>${summary.v4}</code>`),'v4 count must come from the validated catalog');
-  assert.ok(html.includes(`<code data-catalog-v3-count>${summary.v3}</code>`),'v3 count must remain separate');
+  assert.doesNotMatch(html,/data-catalog-v3-count|data-legacy-download|href="\/catalog\/plugins\.json"/u);
 }
 for(const extension of project.extensions) {
   const copy=extensionCopy.find(item=>item.id===extension.id);
@@ -94,8 +95,6 @@ for(const extension of project.extensions) {
   const selected=selectPluginReleases(extension.id,catalogState,project.frameworkVersion);
   assert.equal(dialog.includes('data-current-download'),Boolean(selected.release),extension.id+': primary download must be eligible v4');
   if(selected.release)assert.ok(dialog.includes(`href="${selected.release.downloadPath}"`));
-  assert.equal(dialog.includes('data-legacy-download'),Boolean(selected.legacyRelease));
-  if(selected.legacyRelease)assert.ok(dialog.includes(`href="${selected.legacyRelease.downloadPath}"`));
 }
 for(const extension of project.extensions) {
   assert.ok(homepage.includes(extension.id),`${extension.id}: missing detail identity`);
@@ -116,7 +115,6 @@ assert.equal(project.candidateRelease.status,'not-admitted');
 assert.equal(project.historicalAcceptance.reference,'docs/0.2-validation.md');
 assert.ok(guide.includes(`Historical ${project.historicalAcceptance.frameworkVersion} validation scope`));
 assert.ok(guide.includes('href="/catalog/v4/plugins.json"'));
-assert.ok(guide.includes('href="/catalog/plugins.json"'));
 assert.doesNotMatch(guide,/Rivetin 0\.1\.4 has completed/u);
 assert.doesNotMatch(homepage,/Dev\/test enabled|Live UI · no samples/u);
 assert.ok(guide.includes('CloudTower 4.9.0 development/test environment only'),'Current acceptance scope must remain explicit');

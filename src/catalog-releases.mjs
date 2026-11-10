@@ -1,21 +1,16 @@
 import { validSchema2Minimum } from '../scripts/catalog-contract.mjs';
 import { compareReleaseVersions, validReleaseVersion } from '../scripts/release-version.mjs';
 import { validateRelease, validReleaseTime } from '../scripts/catalog-release-contract.mjs';
+import { compareReleaseVersions, parseReleaseVersion } from '../scripts/release-version.mjs';
 
 const published = catalog => catalog?.plugins.filter(item => item.status === 'published') ?? [];
 
 export function catalogSummary(state) {
-  const legacy = published(state.catalog), current = published(state.v4Catalog);
-  return {
-    v3: legacy.length,
-    v4: current.length,
-    uniqueExtensions: new Set([...legacy, ...current].map(item => item.id)).size,
-  };
+  return { v4: published(state.v4Catalog).length };
 }
 
 export function selectPluginReleases(id, state, frameworkVersion) {
   const currentRelease = published(state.v4Catalog).find(item => item.id === id) ?? null;
-  const legacyRelease = published(state.catalog).find(item => item.id === id) ?? null;
   const compatibility = currentRelease?.compatibility;
   const currentCompatible = Boolean(compatibility?.schemaVersion === 2 &&
     compatibility.frameworkApi === 1 && validReleaseVersion(frameworkVersion) && validSchema2Minimum(compatibility) &&
@@ -25,11 +20,8 @@ export function selectPluginReleases(id, state, frameworkVersion) {
 }
 
 export function catalogMetadata(id, state) {
-  const metadata = catalog => {
-    const item = catalog?.plugins.find(entry => entry.id === id);
-    return item ? { version: item.version, status: item.status } : null;
-  };
-  return { v4: metadata(state.v4Catalog), v3: metadata(state.catalog) };
+  const item = state.v4Catalog?.plugins.find(entry => entry.id === id);
+  return { v4: item ? { version: item.version, status: item.status } : null };
 }
 export function catalogReleaseIdentity(state){
   if(!state.releaseMetadata)return {status:'unregistered',publicationId:null};

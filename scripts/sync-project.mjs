@@ -7,6 +7,7 @@ import { publicCatalogState } from './catalog-files.mjs';
 import { attachProjectState } from '../src/extension-copy.mjs';
 import { createProjectSnapshot,withReviewedHistoricalFingerprint } from './project-snapshot.mjs';
 import { catalogSummary, catalogMetadata } from '../src/catalog-releases.mjs';
+import { parseReleaseVersion } from './release-version.mjs';
 
 const website = fileURLToPath(new URL('../', import.meta.url));
 const previous=JSON.parse(await readFile(path.join(website,'src/project-state.json'),'utf8'));
@@ -30,7 +31,7 @@ async function source(relative) {
   return bytes.toString('utf8').replace(/^\uFEFF/u, '');
 }
 const framework = JSON.parse(await source('framework/package.json'));
-assert.match(framework.version, /^\d+\.\d+\.\d+$/u);
+assert.ok(parseReleaseVersion(framework.version), 'Review framework release version.');
 const profiles = JSON.parse(await source('cli/profiles.json'));
 for (const file of ['README.md','framework/README.md','cli/README.md','docs/rivetin-naming.md','docs/portable-cli-validation.md','docs/ssh-channel.md','catalog/README.md','docs/0.2-validation.md']) await source(file);
 const historyRecord=evidence.find(item=>item.path===previous.historicalAcceptance?.reference);
@@ -43,7 +44,7 @@ for (const id of ids) {
   assert.equal(manifest.id, id);
   assert.equal(pkg.name, id);
   assert.equal(manifest.version, pkg.version, `${id}: package and manifest versions differ`);
-  assert.match(manifest.version, /^\d+\.\d+\.\d+$/u);
+  assert.ok(parseReleaseVersion(manifest.version), `${id}: review plugin release version`);
   assert.equal(typeof manifest.name?.['en-US'], 'string');
   assert.ok(!/\p{Script=Han}/u.test(manifest.name['en-US']));
   assert.equal(manifest.compatibility?.frameworkApi ?? manifest.frameworkApi, 1);
@@ -76,4 +77,4 @@ if (args.includes('--check')) {
 await writeFile(path.join(website,'src/project-state.json'),JSON.stringify(snapshot,null,2)+'\n');
 await mkdir(path.join(website,'.local/content-sync'),{recursive:true});
 await writeFile(path.join(website,'.local/content-sync/source-evidence.json'),JSON.stringify({ reviewedOn, files:evidence, historicalFingerprintReview:{changed:historyReview.changed,previousSHA256:historyReview.previousSHA256,newSHA256:historyReview.newSHA256} },null,2)+'\n');
-console.log(`Synchronized ${extensions.length} source manifests; framework ${framework.version}; v4 ${snapshot.catalogPublication.v4}, historical v3 ${snapshot.catalogPublication.v3}, unique extensions ${snapshot.catalogPublication.uniqueExtensions}. Review copy if any source version changed.`);
+console.log(`Synchronized ${extensions.length} source manifests; framework ${framework.version}; v4 ${snapshot.catalogPublication.v4}. Review copy if any source version changed.`);
