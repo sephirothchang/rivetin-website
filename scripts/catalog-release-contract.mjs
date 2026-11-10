@@ -1,4 +1,4 @@
-import { exact, fail, sha256, validHash, MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, parseJson, parsePackagePath } from './catalog-contract.mjs';
+import { exact, fail, sha256, validHash, MAX_INDEX_BYTES, packageMaxBytes, parseJson, parsePackagePath } from './catalog-contract.mjs';
 import { validateV4Catalog, V4_INDEX_PATH } from './catalog-v4-contract.mjs';
 
 export const RELEASE_PATH='/catalog/v4/release.json';
@@ -60,7 +60,7 @@ export function validatePublicationOutput(value,{request=null,stageHash=null,rel
  const validRecord=(r,max)=>exact(r,['path','sha256','bytes'])&&validHash(r.sha256)&&Number.isSafeInteger(r.bytes)&&r.bytes>0&&r.bytes<=max;
  const paths=[V4_INDEX_PATH,RELEASE_PATH,snapshotIndex(value.publicationId),snapshotMetadata(value.publicationId)];
  if(value.files.some((r,i)=>!validRecord(r,i%2?MAX_RELEASE_BYTES:MAX_INDEX_BYTES)||r.path!==paths[i])||value.files[0].sha256!==value.files[2].sha256||value.files[0].bytes!==value.files[2].bytes||value.files[1].sha256!==value.files[3].sha256||value.files[1].bytes!==value.files[3].bytes||!validRecord(value.ledger,MAX_RELEASE_LEDGER_BYTES)||value.ledger.path!==RELEASE_LEDGER)fail('CATALOG_RELEASE_OUTPUT_BINDING');
- const seen=new Set();for(const r of value.packages){if(!validRecord(r,MAX_PACKAGE_BYTES)||seen.has(r.path))fail('CATALOG_RELEASE_OUTPUT_INVALID');parsePackagePath(r.path);seen.add(r.path);}
+ const seen=new Set();for(const r of value.packages){if(!exact(r,['path','sha256','bytes'])||!validHash(r.sha256)||!Number.isSafeInteger(r.bytes)||r.bytes<=0||seen.has(r.path))fail('CATALOG_RELEASE_OUTPUT_INVALID');const identity=parsePackagePath(r.path);if(r.bytes>packageMaxBytes(identity.extension))fail('CATALOG_RELEASE_OUTPUT_INVALID');seen.add(r.path);}
  if(request&&(value.requestId!==request.requestId||value.files[0].sha256!==request.indexSHA256||value.files[0].bytes!==request.indexBytes)||stageHash&&value.stageSHA256!==stageHash||releaseRequestHash&&value.releaseRequestSHA256!==releaseRequestHash||packages&&JSON.stringify(value.packages)!==JSON.stringify(packages))fail('CATALOG_RELEASE_OUTPUT_MISMATCH');
  return value;
 }

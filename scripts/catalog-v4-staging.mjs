@@ -2,7 +2,8 @@ import { mkdir, lstat, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { boundedFile, copyPublicCatalog, publicCatalogState, safePath } from './catalog-files.mjs';
-import { INDEX_PATH, MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, MAX_TOTAL_BYTES, exact, fail, sha256, validHash, packagePath, parsePackagePath, compareVersions, parseJson } from './catalog-contract.mjs';
+import { INDEX_PATH, MAX_INDEX_BYTES, MAX_TOTAL_BYTES, exact, fail, sha256, validHash, packagePath, packageMaxBytes, parsePackagePath, parseJson } from './catalog-contract.mjs';
+import { compareReleaseVersions } from './release-version.mjs';
 import { V4_INDEX_PATH, validateV4Catalog, validateV4Package, validateV4Transition } from './catalog-v4-contract.mjs';
 import { RELEASE_REQUEST, MAX_RELEASE_BYTES, validateReleaseRequest } from './catalog-release-contract.mjs';
 
@@ -30,11 +31,14 @@ export async function frozenV4Drop(dropRoot,stageHash,baseHash,releaseRequestHas
   const indexRaw=await boundedFile(dropRoot,V4_INDEX_PATH.slice(1),MAX_INDEX_BYTES);
   if(sha256(indexRaw)!==stage.indexSHA256)fail('CATALOG_INDEX_HASH_MISMATCH');
   const catalog=validateV4Catalog(parseJson(indexRaw,MAX_INDEX_BYTES)),seen=new Set(),packages=[];
+  const maxFor=value=>packageMaxBytes(parsePackagePath(value).extension);
   for(const item of stage.packages){
-    if(!exact(item,['id','version','downloadPath','sha256','bytes'])||item.downloadPath!==packagePath(item.id,item.version)||!validHash(item.sha256)||!Number.isSafeInteger(item.bytes)||item.bytes<=0||item.bytes>MAX_PACKAGE_BYTES||seen.has(item.id))fail('CATALOG_STAGE_PACKAGE_INVALID');
-    seen.add(item.id);const entry=catalog.plugins.find(p=>p.id===item.id&&p.version===item.version&&p.status==='published');
-    if(!entry||entry.downloadPath!==item.downloadPath||entry.sha256!==item.sha256)fail('CATALOG_STAGE_INDEX_MISMATCH');
-    const raw=await boundedFile(dropRoot,item.downloadPath.slice(1),MAX_PACKAGE_BYTES);
+    let identity;
+    try{identity=parsePackagePath(item.downloadPath);}catch{fail('CATALOG_STAGE_PACKAGE_INVALID');}
+    if(!exact(item,['id','version','downloadPath','sha256','bytes'])||identity.id!==item.id||identity.version!==item.version||item.downloadPath!==packagePath(item.id,item.version,identity.extension)||!validHash(item.sha256)||!Number.isSafeInteger(item.bytes)||item.bytes<=0||item.bytes>maxFor(item.downloadPath)||seen.has(item.downloadPath))fail('CATALOG_STAGE_PACKAGE_INVALID');
+    seen.add(item.downloadPath);const entry=catalog.plugins.find(p=>p.id===item.id&&p.version===item.version&&p.status==='published'&&p.downloadPath===item.downloadPath);
+    if(!entry||entry.sha256!==item.sha256)fail('CATALOG_STAGE_INDEX_MISMATCH');
+    const raw=await boundedFile(dropRoot,item.downloadPath.slice(1),maxFor(item.downloadPath));
     if(raw.length!==item.bytes||sha256(raw)!==item.sha256)fail('CATALOG_PACKAGE_HASH_MISMATCH');
     validateV4Package(raw,entry);packages.push({path:item.downloadPath,sha256:item.sha256,bytes:item.bytes});
   }
@@ -52,6 +56,7 @@ export async function frozenV4Drop(dropRoot,stageHash,baseHash,releaseRequestHas
 // public/, the source ledger, dist/, or any existing deployed catalog.
 export async function stageV4({siteRoot,dropRoot,stageHash,baseHash,output,previousV4=null,releaseRequestHash=null}){
   const drop=await frozenV4Drop(dropRoot,stageHash,baseHash,releaseRequestHash);
+  const maxFor=value=>packageMaxBytes(parsePackagePath(value).extension);
   if(!path.isAbsolute(siteRoot)||!path.isAbsolute(output))fail('CATALOG_PATH_INVALID');
   const local=path.join(siteRoot,'.local'),resolved=path.resolve(output),prefix=path.resolve(local)+path.sep;
   if(!resolved.startsWith(prefix)||path.dirname(resolved)!==path.resolve(local))fail('CATALOG_IGNORED_OUTPUT_REQUIRED');
@@ -67,13 +72,13 @@ export async function stageV4({siteRoot,dropRoot,stageHash,baseHash,output,previ
   for(const record of drop.packages){const old=ledger.get(record.path);if(old&&(old.sha256!==record.sha256||old.bytes!==record.bytes))fail('CATALOG_SAME_VERSION_IMMUTABLE');ledger.set(record.path,record);}
   for(const entry of drop.catalog.plugins.filter(p=>p.status==='published')){
     const record=ledger.get(entry.downloadPath);if(!record||record.sha256!==entry.sha256)fail('CATALOG_PUBLISHED_FILE_MISSING');
-    if(state.packages.map(old=>parsePackagePath(old.path)).some(old=>old.id===entry.id&&compareVersions(entry.version,old.version)<0))fail('CATALOG_VERSION_DOWNGRADE');
-    if(!drop.packages.some(p=>p.path===entry.downloadPath))validateV4Package(await boundedFile(state.publicRoot,entry.downloadPath.slice(1),MAX_PACKAGE_BYTES),entry);
+    if(state.packages.map(old=>parsePackagePath(old.path)).some(old=>old.id===entry.id&&compareReleaseVersions(entry.version,old.version)<0))fail('CATALOG_VERSION_DOWNGRADE');
+    if(!drop.packages.some(p=>p.path===entry.downloadPath))validateV4Package(await boundedFile(state.publicRoot,entry.downloadPath.slice(1),maxFor(entry.downloadPath)),entry);
   }
   await mkdir(resolved); // exclusive: do not overwrite any existing staging output
   await copyPublicCatalog(siteRoot,resolved,{omitCurrentRelease:publicationPending});
   for(const record of drop.packages){
-    const raw=await boundedFile(dropRoot,record.path.slice(1),MAX_PACKAGE_BYTES);
+    const raw=await boundedFile(dropRoot,record.path.slice(1),maxFor(record.path));
     if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_INPUT_CHANGED');
     if(state.packages.some(old=>old.path===record.path))continue;
     const target=path.join(resolved,...record.path.slice(1).split('/'));
@@ -83,7 +88,7 @@ export async function stageV4({siteRoot,dropRoot,stageHash,baseHash,output,previ
   const target=path.join(resolved,'catalog','v4');if(!state.v4Raw)await mkdir(target);await writeFile(path.join(target,'plugins.json'),drop.indexRaw,{flag:state.v4Raw?'w':'wx'});
   const legacy=await boundedFile(resolved,INDEX_PATH.slice(1),MAX_INDEX_BYTES);
   if(!legacy.equals(state.indexRaw))fail('CATALOG_V3_CHANGED');
-  for(const record of state.packages){const raw=await boundedFile(resolved,record.path.slice(1),MAX_PACKAGE_BYTES);if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_IMMUTABLE_FILE_CHANGED');}
+  for(const record of state.packages){const raw=await boundedFile(resolved,record.path.slice(1),maxFor(record.path));if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_IMMUTABLE_FILE_CHANGED');}
   return {result:'PASS',indexPath:V4_INDEX_PATH,indexSHA256:sha256(drop.indexRaw),legacyIndexSHA256:sha256(legacy),retained:state.packages.length,added:drop.packages.filter(p=>!state.packages.some(old=>old.path===p.path)).length,published:drop.catalog.plugins.filter(p=>p.status==='published').length,output:resolved,...(drop.releaseRequest?{publicationPending:true,publicationId:null}:{})};
 }
 
@@ -93,3 +98,4 @@ async function main(args){
   console.log(JSON.stringify(await stageV4({siteRoot:fileURLToPath(new URL('../',import.meta.url)),dropRoot:values['--drop'],stageHash:values['--stage-sha256'],baseHash:values['--base-sha256'],releaseRequestHash:values['--release-request-sha256']||null,output:values['--output']}),null,2));
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))main(process.argv.slice(2)).catch(error=>{console.error(/^[A-Z][A-Z0-9_]+$/u.test(error.message)?error.message:'CATALOG_V4_STAGING_FAILED');process.exitCode=1;});
+

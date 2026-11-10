@@ -5,7 +5,8 @@ import { isDeepStrictEqual } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { boundedFile, optionalBytes, optionalStat, safePath, publicCatalogState, ledger, exclusive, replace } from './catalog-files.mjs';
-import { INDEX_PATH, MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, exact, fail, sha256, validHash, parsePackagePath, parseJson, compareVersions } from './catalog-contract.mjs';
+import { INDEX_PATH, MAX_INDEX_BYTES, exact, fail, sha256, validHash, packageMaxBytes, parsePackagePath, parseJson } from './catalog-contract.mjs';
+import { compareReleaseVersions } from './release-version.mjs';
 import { V4_INDEX_PATH, validateV4Package, validateV4Transition } from './catalog-v4-contract.mjs';
 import { frozenV4Drop } from './catalog-v4-staging.mjs';
 import { publicationPlan,savePublication,reservePublication,writePublicationSnapshots,commitPublication,readPublicationJournal,verifyPublicationCommit,rollbackPublication,publicationOutput } from './catalog-release-files.mjs';
@@ -23,6 +24,7 @@ async function event(root,name){
 async function snapshot(root,name,bytes){await exclusive(root,name,bytes);return sha256(bytes);}
 async function checkBytes(root,name,hash,max){const bytes=await boundedFile(root,name,max);if(!validHash(hash)||sha256(bytes)!==hash)fail('CATALOG_BACKUP_CHANGED');return bytes;}
 const same=(a,b)=>isDeepStrictEqual(a,b);
+const maxForPath=value=>packageMaxBytes(parsePackagePath(value).extension);
 
 // Recovery changes only exact files whose bytes match this transaction's before
 // or after snapshots. Any conflicting edit keeps the lock for manual review.
@@ -53,22 +55,22 @@ async function recoverOwned({siteRoot,transactionId,onPhase=async()=>{}}){
   if(!same(oldRecords,m.oldPackages))fail('CATALOG_BACKUP_CHANGED');
   const expectedNew=ledger(parseJson(newLedger,MAX_INDEX_BYTES)).packages;
   for(const record of m.newPackages){
-    if(!exact(record,['path','sha256','bytes'])||!validHash(record.sha256)||!Number.isSafeInteger(record.bytes)||record.bytes<1||record.bytes>MAX_PACKAGE_BYTES)fail('CATALOG_JOURNAL_INVALID');
+    if(!exact(record,['path','sha256','bytes'])||!validHash(record.sha256)||!Number.isSafeInteger(record.bytes)||record.bytes<1||record.bytes>maxForPath(record.path))fail('CATALOG_JOURNAL_INVALID');
     parsePackagePath(record.path);if(oldRecords.some(p=>p.path===record.path)||!expectedNew.some(p=>same(p,record)))fail('CATALOG_JOURNAL_INVALID');
-    const saved=await checkBytes(journal,'candidate'+record.path,record.sha256,MAX_PACKAGE_BYTES);if(saved.length!==record.bytes)fail('CATALOG_BACKUP_CHANGED');
+    const saved=await checkBytes(journal,'candidate'+record.path,record.sha256,maxForPath(record.path));if(saved.length!==record.bytes)fail('CATALOG_BACKUP_CHANGED');
   }
   if(expectedNew.length!==oldRecords.length+m.newPackages.length||oldRecords.some(p=>!expectedNew.some(q=>same(p,q))))fail('CATALOG_JOURNAL_INVALID');
   if(!same(await boundedFile(publicRoot,INDEX_PATH.slice(1),MAX_INDEX_BYTES),oldV3))fail('CATALOG_ROLLBACK_CONFLICT');
-  for(const record of oldRecords){const saved=await checkBytes(journal,'backup'+record.path,record.sha256,MAX_PACKAGE_BYTES);const actual=await boundedFile(publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES);if(saved.length!==record.bytes||!same(saved,actual))fail('CATALOG_ROLLBACK_CONFLICT');}
+  for(const record of oldRecords){const saved=await checkBytes(journal,'backup'+record.path,record.sha256,maxForPath(record.path));const actual=await boundedFile(publicRoot,record.path.slice(1),maxForPath(record.path));if(saved.length!==record.bytes||!same(saved,actual))fail('CATALOG_ROLLBACK_CONFLICT');}
   const currentV4=await optionalBytes(publicRoot,V4_INDEX_PATH.slice(1),MAX_INDEX_BYTES),currentLedger=await boundedFile(siteRoot,LEDGER,MAX_INDEX_BYTES);
   if(!same(currentV4,oldV4)&&!same(currentV4,newV4)||!same(currentLedger,oldLedger)&&!same(currentLedger,newLedger))fail('CATALOG_ROLLBACK_CONFLICT');
-  for(const record of m.newPackages){const actual=await optionalBytes(publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES);if(actual&&(actual.length!==record.bytes||sha256(actual)!==record.sha256))fail('CATALOG_ROLLBACK_CONFLICT');}
+  for(const record of m.newPackages){const actual=await optionalBytes(publicRoot,record.path.slice(1),maxForPath(record.path));if(actual&&(actual.length!==record.bytes||sha256(actual)!==record.sha256))fail('CATALOG_ROLLBACK_CONFLICT');}
   const eventRaw=await boundedFile(journal,'events.ndjson',256*1024);let events;
   try{events=eventRaw.toString('utf8').trim().split('\n').map(line=>JSON.parse(line));}catch{fail('CATALOG_JOURNAL_INVALID');}
   if(events.some(item=>!exact(item,['event','at'])||!['prepared','committed','rolled-back','reconciled-committed'].includes(item.event)||typeof item.at!=='string'))fail('CATALOG_JOURNAL_INVALID');
   if(events.some(item=>item.event==='committed')){
     if(!same(currentV4,newV4)||!same(currentLedger,newLedger))fail('CATALOG_ROLLBACK_CONFLICT');
-    for(const record of m.newPackages)if(!await optionalBytes(publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES))fail('CATALOG_ROLLBACK_CONFLICT');
+    for(const record of m.newPackages)if(!await optionalBytes(publicRoot,record.path.slice(1),maxForPath(record.path)))fail('CATALOG_ROLLBACK_CONFLICT');
     await verifyPublicationCommit(siteRoot,publicRoot,publication);
     await publicCatalogState(siteRoot,{allowLocked:true});await event(journal,'reconciled-committed');
     return {result:'confirmed-committed',transactionId,journal};
@@ -81,7 +83,7 @@ async function recoverOwned({siteRoot,transactionId,onPhase=async()=>{}}){
   await rollbackPublication(siteRoot,publicRoot,publication,onPhase);
   if(!same(currentLedger,oldLedger))await replace(siteRoot,LEDGER,oldLedger,newLedger);
   await onPhase('ledger-restored');
-  for(const record of m.newPackages){const actual=await optionalBytes(publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES);if(actual){if(sha256(actual)!==record.sha256)fail('CATALOG_ROLLBACK_CONFLICT');await unlink(path.join(publicRoot,record.path.slice(1)));}}
+  for(const record of m.newPackages){const actual=await optionalBytes(publicRoot,record.path.slice(1),maxForPath(record.path));if(actual){if(sha256(actual)!==record.sha256)fail('CATALOG_ROLLBACK_CONFLICT');await unlink(path.join(publicRoot,record.path.slice(1)));}}
   await onPhase('packages-removed');
   await publicCatalogState(siteRoot,{allowLocked:true});await event(journal,'rolled-back');
   return {result:'rolled-back',transactionId,journal};
@@ -117,8 +119,8 @@ export async function importV4({siteRoot,dropRoot,stageHash,baseHash,check=false
     const packages=ledger({schemaVersion:1,packages:[...combined.values()].sort((a,b)=>a.path.localeCompare(b.path,'en'))}).packages;
     for(const entry of drop.catalog.plugins.filter(x=>x.status==='published')){
       const record=combined.get(entry.downloadPath);if(!record||record.sha256!==entry.sha256)fail('CATALOG_PUBLISHED_FILE_MISSING');
-      if(state.packages.map(old=>parsePackagePath(old.path)).some(old=>old.id===entry.id&&compareVersions(entry.version,old.version)<0))fail('CATALOG_VERSION_DOWNGRADE');
-      if(!drop.packages.some(x=>x.path===entry.downloadPath))validateV4Package(await boundedFile(state.publicRoot,entry.downloadPath.slice(1),MAX_PACKAGE_BYTES),entry);
+      if(state.packages.map(old=>parsePackagePath(old.path)).some(old=>old.id===entry.id&&compareReleaseVersions(entry.version,old.version)<0))fail('CATALOG_VERSION_DOWNGRADE');
+      if(!drop.packages.some(x=>x.path===entry.downloadPath))validateV4Package(await boundedFile(state.publicRoot,entry.downloadPath.slice(1),maxForPath(entry.downloadPath)),entry);
     }
     const newPackages=drop.packages.filter(p=>!state.packages.some(old=>old.path===p.path));
     const publication=publicationPlan(state,drop,publishedAt);
@@ -129,13 +131,13 @@ export async function importV4({siteRoot,dropRoot,stageHash,baseHash,check=false
     const newLedger=encode({schemaVersion:1,packages});
     const manifest={schemaVersion:1,id:transactionId,stageSHA256:stageHash,v3SHA256:await snapshot(journal,'backup/catalog/plugins.json',state.indexRaw),previousV4SHA256:state.v4Raw?await snapshot(journal,'backup/catalog/v4/plugins.json',state.v4Raw):null,previousLedgerSHA256:await snapshot(journal,'backup/catalog-integrity.json',state.ledgerRaw),newV4SHA256:await snapshot(journal,'candidate/catalog/v4/plugins.json',drop.indexRaw),newLedgerSHA256:await snapshot(journal,'candidate/catalog-integrity.json',newLedger),oldPackages:state.packages,newPackages};
     if(publication)manifest.publication=await savePublication(journal,publication);
-    for(const record of state.packages)await snapshot(journal,'backup'+record.path,await boundedFile(state.publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES));
-    for(const record of newPackages){const raw=await boundedFile(dropRoot,record.path.slice(1),MAX_PACKAGE_BYTES);if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_INPUT_CHANGED');await snapshot(journal,'candidate'+record.path,raw);}
+    for(const record of state.packages)await snapshot(journal,'backup'+record.path,await boundedFile(state.publicRoot,record.path.slice(1),maxForPath(record.path)));
+    for(const record of newPackages){const raw=await boundedFile(dropRoot,record.path.slice(1),maxForPath(record.path));if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_INPUT_CHANGED');await snapshot(journal,'candidate'+record.path,raw);}
     const manifestRaw=encode(manifest);await snapshot(journal,'manifest.json',manifestRaw);await event(journal,'prepared');
     const lockData=encode({schemaVersion:1,id:transactionId,manifestSHA256:sha256(manifestRaw)});await lock.truncate(0);await lock.write(lockData,0,lockData.length,0);await lock.sync();prepared=true;
     await onPhase('prepared');
     await reservePublication(siteRoot,publication);if(publication)await onPhase('release-reserved');
-    for(const record of newPackages){await exclusive(state.publicRoot,record.path.slice(1),await boundedFile(journal,'candidate'+record.path,MAX_PACKAGE_BYTES));await onPhase('package-written');}
+    for(const record of newPackages){await exclusive(state.publicRoot,record.path.slice(1),await boundedFile(journal,'candidate'+record.path,maxForPath(record.path)));await onPhase('package-written');}
     await replace(siteRoot,LEDGER,newLedger,state.ledgerRaw);await onPhase('ledger-written');
     await writePublicationSnapshots(state.publicRoot,publication,drop.indexRaw,onPhase);
     await replace(state.publicRoot,V4_INDEX_PATH.slice(1),drop.indexRaw,state.v4Raw??null);await onPhase('index-written');
@@ -161,3 +163,4 @@ async function main(args){
   console.log(JSON.stringify(await importV4({siteRoot:fileURLToPath(new URL('../',import.meta.url)),dropRoot:values['--drop'],stageHash:values['--stage-sha256'],baseHash:values['--base-sha256'],releaseRequestHash:values['--release-request-sha256']||null,check})));
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))main(process.argv.slice(2)).catch(error=>{console.error(JSON.stringify({error:/^[A-Z][A-Z0-9_]+$/u.test(error.message)?error.message:'CATALOG_V4_IMPORT_FAILED',transactionId:error.transactionId??null}));process.exitCode=1;});
+

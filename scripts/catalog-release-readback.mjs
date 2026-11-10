@@ -2,7 +2,7 @@ import { mkdir,writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { boundedFile,safePath } from './catalog-files.mjs';
-import { SITE,exact,fail,sha256,validHash,parseJson,MAX_INDEX_BYTES,MAX_PACKAGE_BYTES,parsePackagePath } from './catalog-contract.mjs';
+import { SITE,exact,fail,sha256,validHash,parseJson,MAX_INDEX_BYTES,packageMaxBytes,parsePackagePath } from './catalog-contract.mjs';
 import { MAX_RELEASE_BYTES,validateRelease,validatePublicationOutput,validReleaseTime,encode } from './catalog-release-contract.mjs';
 import { frozenV4Drop } from './catalog-v4-staging.mjs';
 import { download,ignoredOutput } from './readback-catalog.mjs';
@@ -10,7 +10,7 @@ import { download,ignoredOutput } from './readback-catalog.mjs';
 export function releaseRequests(manifest){
  validatePublicationOutput(manifest);
  const names=[['catalog.plugins.json','catalog.receipt.json'],['catalog.release.json','catalog.release.receipt.json'],['catalog.snapshot.plugins.json','catalog.snapshot.receipt.json'],['catalog.snapshot.release.json','catalog.snapshot.release.receipt.json']];
- return [...manifest.files.map((r,i)=>({...r,body:names[i][0],receipt:names[i][1],max:i%2?MAX_RELEASE_BYTES:MAX_INDEX_BYTES})),...manifest.packages.map(r=>{const p=parsePackagePath(r.path),stem=p.id+'-'+p.version;return {...r,body:stem+'.rivetin.json',receipt:stem+'.receipt.json',max:MAX_PACKAGE_BYTES};})];
+ return [...manifest.files.map((r,i)=>({...r,body:names[i][0],receipt:names[i][1],extension:'json',max:i%2?MAX_RELEASE_BYTES:MAX_INDEX_BYTES})),...manifest.packages.map(r=>{const p=parsePackagePath(r.path),stem=p.id+'-'+p.version;return {...r,body:r.path.split('/').at(-1),receipt:stem+'.receipt.json',extension:p.extension,max:packageMaxBytes(p.extension)};})];
 }
 function verifySet(manifest,proofs,{notBefore,now=Date.now()}={}){
  const metadata=validateRelease(parseJson(proofs[1].raw,MAX_RELEASE_BYTES),proofs[0].raw),boundary=Math.max(Date.parse(notBefore),Date.parse(metadata.publishedAt));

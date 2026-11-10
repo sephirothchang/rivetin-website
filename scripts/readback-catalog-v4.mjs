@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { safePath } from './catalog-files.mjs';
-import { MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, fail } from './catalog-contract.mjs';
+import { MAX_INDEX_BYTES, packageMaxBytes, parsePackagePath, fail } from './catalog-contract.mjs';
 import { V4_INDEX_PATH } from './catalog-v4-contract.mjs';
 import { frozenV4Drop } from './catalog-v4-staging.mjs';
 import { download, ignoredOutput } from './readback-catalog.mjs';
@@ -10,7 +10,7 @@ import { download, ignoredOutput } from './readback-catalog.mjs';
 export async function readbackV4({dropRoot,stageHash,baseHash,output,fetcher=fetch}){
   const drop=await frozenV4Drop(dropRoot,stageHash,baseHash);
   await ignoredOutput(output);
-  const requests=[{path:V4_INDEX_PATH,sha256:drop.stage.indexSHA256,bytes:drop.indexRaw.length,stem:'catalog',body:'catalog.plugins.json',max:MAX_INDEX_BYTES},...drop.stage.packages.map(record=>({...record,path:record.downloadPath,stem:`${record.id}-${record.version}`,body:`${record.id}-${record.version}.rivetin.json`,max:MAX_PACKAGE_BYTES}))];
+  const requests=[{path:V4_INDEX_PATH,sha256:drop.stage.indexSHA256,bytes:drop.indexRaw.length,stem:'catalog',body:'catalog.plugins.json',extension:'json',max:MAX_INDEX_BYTES},...drop.stage.packages.map(record=>{const identity=parsePackagePath(record.downloadPath);return {...record,path:record.downloadPath,stem:`${record.id}-${record.version}`,body:record.downloadPath.split('/').at(-1),extension:identity.extension,max:packageMaxBytes(identity.extension)};})];
   const results=[];
   for(const request of requests)results.push({request,...await download(request.path,request,request.max,fetcher)});
   await mkdir(output,{recursive:true});

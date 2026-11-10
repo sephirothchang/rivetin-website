@@ -3,12 +3,15 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { frozenDrop, safePath } from './catalog-files.mjs';
-import { SITE, INDEX_PATH, MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, sha256, fail } from './catalog-contract.mjs';
+import { SITE, INDEX_PATH, MAX_INDEX_BYTES, packageMaxBytes, parsePackagePath, sha256, fail } from './catalog-contract.mjs';
 
+const typeMatches=(extension,contentType)=>extension==='zip'
+  ? /^application\/(?:zip|octet-stream)(?:\s*;|$)/iu.test(contentType)
+  : /^application\/json(?:\s*;|$)/iu.test(contentType);
 export async function download(pathname, expected, max, fetcher=fetch) {
   const response=await fetcher(SITE+pathname,{redirect:'manual',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(20000)});
   if(response.status!==200||response.redirected)fail('CATALOG_HTTPS_STATUS');
-  if(!/^application\/json(?:\s*;|$)/iu.test(response.headers.get('content-type')||''))fail('CATALOG_HTTPS_CONTENT_TYPE');
+  if(!typeMatches(expected.extension,response.headers.get('content-type')||''))fail('CATALOG_HTTPS_CONTENT_TYPE');
   const declared=response.headers.get('content-length');
   if(declared!==null&&(!/^\d+$/u.test(declared)||Number(declared)>max))fail('CATALOG_HTTPS_SIZE_LIMIT');
   const chunks=[];let bytes=0;
@@ -33,7 +36,7 @@ export async function ignoredOutput(output){
 export async function readback({dropRoot,stageHash,output,fetcher=fetch}){
   const drop=await frozenDrop(dropRoot,stageHash);
   await ignoredOutput(output);
-  const requests=[{path:INDEX_PATH,sha256:drop.stage.indexSHA256,bytes:drop.indexRaw.length,stem:'catalog',body:'catalog.plugins.json',max:MAX_INDEX_BYTES},...drop.stage.packages.map(record=>({...record,path:record.downloadPath,stem:`${record.id}-${record.version}`,body:`${record.id}-${record.version}.rivetin.json`,max:MAX_PACKAGE_BYTES}))];
+  const requests=[{path:INDEX_PATH,sha256:drop.stage.indexSHA256,bytes:drop.indexRaw.length,stem:'catalog',body:'catalog.plugins.json',extension:'json',max:MAX_INDEX_BYTES},...drop.stage.packages.map(record=>{const identity=parsePackagePath(record.path);return {...record,path:record.downloadPath,stem:`${record.id}-${record.version}`,body:record.downloadPath.split('/').at(-1),extension:identity.extension,max:packageMaxBytes(identity.extension)};})];
   const results=[];
   // Do not write partial evidence until every canonical HTTPS response validates.
   for(const request of requests)results.push({request,...await download(request.path,request,request.max,fetcher)});

@@ -3,11 +3,13 @@ import { lstat, readdir, open, mkdir, rename, unlink, writeFile } from 'node:fs/
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
-import { INDEX_PATH, MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, MAX_TOTAL_BYTES, exact, fail, sha256, validHash, packagePath, parsePackagePath, parseJson, validateCatalog, validatePackage, validateTransition } from './catalog-contract.mjs';
+import { INDEX_PATH, MAX_INDEX_BYTES, MAX_PACKAGE_BYTES, MAX_TOTAL_BYTES, exact, fail, sha256, validHash, packagePath, packageMaxBytes, parsePackagePath, parseJson, validateCatalog, validatePackage, validateTransition } from './catalog-contract.mjs';
 import { V4_INDEX_PATH, validateV4Catalog, validateV4Package } from './catalog-v4-contract.mjs';
+import { isZipPackage } from './standard-zip.mjs';
 import { RELEASE_PATH, RELEASE_LEDGER, MAX_RELEASE_BYTES, MAX_RELEASE_LEDGER_BYTES, releaseLedger, validateRelease, emptyReleaseLedger, snapshotMetadata } from './catalog-release-contract.mjs';
 
 const LEDGER='catalog-integrity.json';
+const maxForPath=value=>packageMaxBytes(parsePackagePath(value).extension);
 export async function optionalStat(file){try{return await lstat(file);}catch(error){if(error.code==='ENOENT')return null;throw error;}}
 function relative(name){if(typeof name!=='string'||!name||/[\\:\x00-\x1f\x7f]/u.test(name)||name.split('/').some(part=>!part||part==='.'||part==='..'))fail('CATALOG_PATH_INVALID');return name;}
 export async function safePath(root,name,{missing=false,directory=false}={}){
@@ -51,8 +53,10 @@ export function ledger(value){
   if(!exact(value,['schemaVersion','packages'])||value.schemaVersion!==1||!Array.isArray(value.packages)||value.packages.length>5000)fail('CATALOG_LEDGER_INVALID');
   const seen=new Set();let total=0;
   for(const item of value.packages){
-    if(!exact(item,['path','sha256','bytes'])||!validHash(item.sha256)||!Number.isSafeInteger(item.bytes)||item.bytes<=0||item.bytes>MAX_PACKAGE_BYTES)fail('CATALOG_LEDGER_INVALID');
-    parsePackagePath(item.path);if(seen.has(item.path))fail('CATALOG_LEDGER_INVALID');seen.add(item.path);total+=item.bytes;
+    if(!exact(item,['path','sha256','bytes'])||!validHash(item.sha256)||!Number.isSafeInteger(item.bytes)||item.bytes<=0)fail('CATALOG_LEDGER_INVALID');
+    const identity=parsePackagePath(item.path);
+    if(item.bytes>packageMaxBytes(identity.extension))fail('CATALOG_LEDGER_INVALID');
+    if(seen.has(item.path))fail('CATALOG_LEDGER_INVALID');seen.add(item.path);total+=item.bytes;
   }
   if(total>MAX_TOTAL_BYTES)fail('CATALOG_SITE_SIZE_LIMIT');return value;
 }
@@ -93,12 +97,16 @@ export async function publicCatalogState(siteRoot,{allowLocked=false}={}){
   const expected=new Set([INDEX_PATH.slice(1),...(v4Raw?[V4_INDEX_PATH.slice(1)]:[]),...packages.map(item=>item.path.slice(1)),...publication.releaseFiles]);
   if(files.length!==expected.size||files.some(file=>!expected.has(file)))fail('CATALOG_PUBLIC_FILE_UNREGISTERED');
   for(const record of packages){
-    const raw=await boundedFile(publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES),identity=parsePackagePath(record.path);
+    const identity=parsePackagePath(record.path),max=packageMaxBytes(identity.extension);
+    const raw=await boundedFile(publicRoot,record.path.slice(1),max);
     if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_IMMUTABLE_FILE_CHANGED');
     const current=catalog.plugins.find(item=>item.downloadPath===record.path),currentV4=v4Catalog?.plugins.find(item=>item.downloadPath===record.path);
-    const manifest=parseJson(raw,MAX_PACKAGE_BYTES).manifest;
-    const actual=manifest?.compatibility?.schemaVersion===2?validateV4Package(raw,currentV4):validatePackage(raw,current);
-    if(current&&manifest?.compatibility?.schemaVersion===2||currentV4&&manifest?.compatibility?.schemaVersion!==2||actual.id!==identity.id||actual.version!==identity.version)fail('CATALOG_PACKAGE_IDENTITY_MISMATCH');
+    let actual;
+    if(currentV4)actual=validateV4Package(raw,currentV4);
+    else if(current)actual=validatePackage(raw,current);
+    else if(isZipPackage(raw))actual=validateV4Package(raw,null);
+    else{try{actual=validateV4Package(raw,null);}catch{actual=validatePackage(raw);}}
+    if(actual.id!==identity.id||actual.version!==identity.version)fail('CATALOG_PACKAGE_IDENTITY_MISMATCH');
   }
   for(const item of catalog.plugins.filter(item=>item.status==='published'))if(!packages.some(record=>record.path===item.downloadPath&&record.sha256===item.sha256))fail('CATALOG_PUBLISHED_FILE_MISSING');
   for(const item of v4Catalog?.plugins.filter(item=>item.status==='published')??[])if(!packages.some(record=>record.path===item.downloadPath&&record.sha256===item.sha256))fail('CATALOG_PUBLISHED_FILE_MISSING');
@@ -155,10 +163,10 @@ export async function importCatalog({siteRoot,dropRoot,stageHash,check=false}){
     await mkdir(state.publicRoot,{recursive:true});
     for(const record of drop.packages){
       if(state.packages.some(old=>old.path===record.path))continue;
-      const raw=await boundedFile(dropRoot,record.path.slice(1),MAX_PACKAGE_BYTES);if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_INPUT_CHANGED');
+      const raw=await boundedFile(dropRoot,record.path.slice(1),maxForPath(record.path));if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_INPUT_CHANGED');
       await exclusive(state.publicRoot,record.path.slice(1),raw);created.push(record);
     }
-    for(const record of packages){const raw=await boundedFile(state.publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES);if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_IMMUTABLE_FILE_CHANGED');}
+    for(const record of packages){const raw=await boundedFile(state.publicRoot,record.path.slice(1),maxForPath(record.path));if(raw.length!==record.bytes||sha256(raw)!==record.sha256)fail('CATALOG_IMMUTABLE_FILE_CHANGED');}
     newLedger=Buffer.from(JSON.stringify({schemaVersion:1,packages},null,2)+'\n');
     await replace(siteRoot,LEDGER,newLedger,state.ledgerRaw);ledgerWritten=true;
     // Publish the mutable index only after every immutable file is present.
@@ -166,7 +174,7 @@ export async function importCatalog({siteRoot,dropRoot,stageHash,check=false}){
     return result;
   }catch(error){
     if(ledgerWritten){if(state.ledgerRaw)await replace(siteRoot,LEDGER,state.ledgerRaw,newLedger);else{if(!isDeepStrictEqual(await boundedFile(siteRoot,LEDGER,MAX_INDEX_BYTES),newLedger))fail('CATALOG_ROLLBACK_CONFLICT');await unlink(path.join(siteRoot,LEDGER));}}
-    for(const record of created){const raw=await boundedFile(state.publicRoot,record.path.slice(1),MAX_PACKAGE_BYTES);if(sha256(raw)!==record.sha256)fail('CATALOG_ROLLBACK_CONFLICT');await unlink(path.join(state.publicRoot,record.path.slice(1)));}
+    for(const record of created){const raw=await boundedFile(state.publicRoot,record.path.slice(1),maxForPath(record.path));if(sha256(raw)!==record.sha256)fail('CATALOG_ROLLBACK_CONFLICT');await unlink(path.join(state.publicRoot,record.path.slice(1)));}
     throw error;
   }finally{await lock.close();await unlink(path.join(siteRoot,'.local','catalog-import.lock'));}
 }
@@ -176,11 +184,11 @@ export async function copyPublicCatalog(siteRoot,distRoot,{omitCurrentRelease=fa
   for(const dir of ['catalog','downloads'])if(await optionalStat(path.join(distRoot,dir)))for(const file of await treeFiles(path.join(distRoot,dir)))if(!expected.has(`${dir}/${file}`))fail('CATALOG_DIST_FILE_UNREGISTERED');
   if(!state.catalog)return state;
   for(const name of expected){
-    const raw=name===INDEX_PATH.slice(1)?state.indexRaw:name===V4_INDEX_PATH.slice(1)?state.v4Raw:await boundedFile(state.publicRoot,name,MAX_PACKAGE_BYTES);
-    const record=state.packages.find(item=>item.path===`/${name}`);
+    const record=state.packages.find(item=>item.path===`/${name}`),max=record?maxForPath(record.path):MAX_PACKAGE_BYTES;
+    const raw=name===INDEX_PATH.slice(1)?state.indexRaw:name===V4_INDEX_PATH.slice(1)?state.v4Raw:await boundedFile(state.publicRoot,name,max);
     if(record&&(raw.length!==record.bytes||sha256(raw)!==record.sha256))fail('CATALOG_INPUT_CHANGED');
     await ensureParents(distRoot,name);const target=await safePath(distRoot,name,{missing:true});
-    if(record&&await optionalStat(target)){const previous=await boundedFile(distRoot,name,MAX_PACKAGE_BYTES);if(!raw.equals(previous))fail('CATALOG_DIST_IMMUTABLE_CHANGED');}
+    if(record&&await optionalStat(target)){const previous=await boundedFile(distRoot,name,max);if(!raw.equals(previous))fail('CATALOG_DIST_IMMUTABLE_CHANGED');}
     if((name===INDEX_PATH.slice(1)||name===V4_INDEX_PATH.slice(1))&&!(await boundedFile(state.publicRoot,name,MAX_INDEX_BYTES)).equals(raw))fail('CATALOG_INPUT_CHANGED');
     await writeFile(target,raw);
   }

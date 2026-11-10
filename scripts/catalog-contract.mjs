@@ -1,10 +1,14 @@
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
+import { MAX_LEGACY_PACKAGE_BYTES, MAX_STANDARD_PACKAGE_BYTES } from './package-limits.mjs';
+import { validReleaseVersion } from './release-version.mjs';
 
 export const SITE='https://rivetin.dev';
 export const INDEX_PATH='/catalog/plugins.json';
 export const MAX_INDEX_BYTES=512*1024;
-export const MAX_PACKAGE_BYTES=16*1024*1024;
+export const MAX_PACKAGE_BYTES=MAX_LEGACY_PACKAGE_BYTES;
+export const MAX_ZIP_PACKAGE_BYTES=MAX_STANDARD_PACKAGE_BYTES;
+export const PACKAGE_EXTENSIONS=Object.freeze(['zip','rivetin.json']);
 export const MAX_TOTAL_BYTES=512*1024*1024;
 export const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
 export const fail=code=>{throw Object.assign(new Error(code),{code});};
@@ -23,15 +27,24 @@ export function validSchema2Minimum(value){
   return validVersion(value?.frameworkMinVersion)&&
     (Object.hasOwn(value,'frameworkMaxVersionExclusive')?validVersion(value.frameworkMaxVersionExclusive):compareVersions(value.frameworkMinVersion,MINIMUM_ONLY_READER_VERSION)>=0);
 }
-export function packagePath(id,version){
-  if(!validId(id)||!validVersion(version))fail('CATALOG_IDENTITY_INVALID');
-  return `/downloads/plugins/${id}/${version}/${id}-${version}.rivetin.json`;
+const validPathVersion=version=>validVersion(version)||validReleaseVersion(version);
+export function packagePath(id,version,extension='rivetin.json'){
+  if(!validId(id)||!validPathVersion(version)||!PACKAGE_EXTENSIONS.includes(extension))fail('CATALOG_IDENTITY_INVALID');
+  return `/downloads/plugins/${id}/${version}/${id}-${version}.${extension}`;
+}
+export function packageMaxBytes(extension){
+  if(extension==='zip')return MAX_ZIP_PACKAGE_BYTES;
+  if(extension==='rivetin.json')return MAX_PACKAGE_BYTES;
+  fail('CATALOG_PATH_INVALID');
 }
 export function parsePackagePath(value){
   if(typeof value!=='string')fail('CATALOG_PATH_INVALID');
   const match=/^\/downloads\/plugins\/(rivetin-[a-z0-9]+(?:-[a-z0-9]+)*)\/([^/]+)\/([^/]+)$/u.exec(value);
-  if(!match||value!==packagePath(match[1],match[2]))fail('CATALOG_PATH_INVALID');
-  return {id:match[1],version:match[2]};
+  if(!match)fail('CATALOG_PATH_INVALID');
+  for(const extension of PACKAGE_EXTENSIONS){
+    try{if(value===packagePath(match[1],match[2],extension))return {id:match[1],version:match[2],extension};}catch{}
+  }
+  fail('CATALOG_PATH_INVALID');
 }
 export function parseJson(raw,max){
   if(!Buffer.isBuffer(raw)||!raw.length||raw.length>max)fail('CATALOG_SIZE_LIMIT');
