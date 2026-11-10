@@ -78,3 +78,9 @@ test('minimum-only selection ignores legacy upper values but enforces no-max024 
  for(const value of ['bad',' 0.3.0',null,undefined]){const malformed=entry('rivetin-ipmi-redirection','0.1.4',2);malformed.compatibility.frameworkMaxVersionExclusive=value;assert.throws(()=>state([malformed]),/COMPATIBILITY/u);assert.equal(selectPluginReleases(malformed.id,rawState(malformed),'1.0.0').release,null);}
  const wrongApi=entry('rivetin-ipmi-redirection','0.1.4',2);wrongApi.compatibility.frameworkApi=2;assert.throws(()=>state([wrongApi]),/COMPATIBILITY/u);assert.equal(selectPluginReleases(wrongApi.id,rawState(wrongApi),'0.2.4').release,null);
 });
+test('new framework prereleases compare against stable minimum without changing catalog channel',()=>{
+ const stableFloor=state();
+ assert.equal(selectPluginReleases('rivetin-ipmi-redirection',stableFloor,'0.3.0-alpha.1').release.version,'0.1.4');
+ assert.equal(selectPluginReleases('rivetin-ipmi-redirection',stableFloor,'0.2.0-alpha.1').release,null);
+ assert.equal(selectPluginReleases('rivetin-ipmi-redirection',stableFloor,'0.3.0-alpha.01').release,null);
+});

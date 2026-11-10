@@ -94,3 +94,9 @@ test('separate real identity result is limited to one built-in execution and pla
 
 
 test("026 local UI contract does not imply source publication, new-plugin installation or network execution",async()=>{const {pages,extensions}=await import("../src/site-v2.mjs");const {localizedPages}=await import("../src/localization.mjs");const guide=pages["guide.html"];assert.match(guide,/Adding an entry to an existing slot only requires a plugin update/u);assert.match(guide,/everoute.navigation.tools/u);assert.match(guide,/cluster-network-topology.toolbar.actions/u);assert.match(guide,/Framework source 0.2.6 is published at the exact commit listed above/u);assert.match(guide,/Network Topology 0.1.3 is installed and enabled/u);assert.match(guide,/Policy Converter 0.1.4 is installed and enabled/u);assert.match(guide,/native tree selector was not verified/u);assert.match(guide,/Forty-four shared-module version warnings/u);assert.match(guide,/not silently mapped to UI contributions/u);for(const [key,version] of [["topology","0.1.3"],["converter","0.1.4"]])assert.equal(extensions.find(e=>e.key===key).release.version,version);assert.ok(localizedPages(pages)["guide.html"]);});
+test('current source snapshot accepts new framework prerelease while preserving historical record',()=>{
+ const previous={historicalAcceptance:history};
+ const snapshot=createProjectSnapshot({...input,previous,frameworkVersion:'0.3.0-alpha.1'});
+ assert.equal(snapshot.frameworkVersion,'0.3.0-alpha.1');assert.deepEqual(snapshot.historicalAcceptance,history);
+ assert.throws(()=>createProjectSnapshot({...input,previous,frameworkVersion:'0.3.0-alpha.01'}));
+});

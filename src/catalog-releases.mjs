@@ -1,4 +1,5 @@
-import { compareVersions, validVersion, validSchema2Minimum } from '../scripts/catalog-contract.mjs';
+import { validSchema2Minimum } from '../scripts/catalog-contract.mjs';
+import { compareReleaseVersions, validReleaseVersion } from '../scripts/release-version.mjs';
 import { validateRelease, validReleaseTime } from '../scripts/catalog-release-contract.mjs';
 
 const published = catalog => catalog?.plugins.filter(item => item.status === 'published') ?? [];
@@ -17,8 +18,8 @@ export function selectPluginReleases(id, state, frameworkVersion) {
   const legacyRelease = published(state.catalog).find(item => item.id === id) ?? null;
   const compatibility = currentRelease?.compatibility;
   const currentCompatible = Boolean(compatibility?.schemaVersion === 2 &&
-    compatibility.frameworkApi === 1 && validVersion(frameworkVersion) && validSchema2Minimum(compatibility) &&
-    compareVersions(frameworkVersion, compatibility.frameworkMinVersion) >= 0);
+    compatibility.frameworkApi === 1 && validReleaseVersion(frameworkVersion) && validSchema2Minimum(compatibility) &&
+    compareReleaseVersions(frameworkVersion, compatibility.frameworkMinVersion) >= 0);
   // An old declaration never becomes the primary 0.2 download by fallback.
   return { currentRelease, legacyRelease, release: currentCompatible ? currentRelease : null };
 }
