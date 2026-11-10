@@ -286,14 +286,7 @@ export const messages = {
   "Framework candidate": "框架候选",
   "Recovery fix candidate under review": "恢复流程修复候选复核中",
   "Current deployment": "当前部署",
-  "Framework 0.2.1 recovery-flow fixes remain under review and have not been deployed. The current development/test deployment remains framework 0.2.0 and is enabled. Local recovery checks do not establish acceptance of new client builds or live recovery behavior.": "框架 0.2.1 的恢复流程修复候选仍在复核，尚未部署。当前开发测试环境仍部署框架 0.2.0，保持启用。本地恢复检查不能证明新客户端构建或真实恢复行为已经验收。",
-  "These examples describe the current CLI candidate contract. Replace every placeholder and use the exact build for your authorized target; full installer acceptance and public release remain pending.": "以下示例描述当前 CLI 候选合同。请替换所有占位符，并在授权目标上使用准确的构建；完整安装器验收及公开发布仍待完成。",
-  "Choose the intended Tower and SSH endpoints and provide the required SSH and Tower administrator credentials.": "选择预期的 Tower 和 SSH 端点，并提供所需的 SSH 和 Tower 管理员凭据。",
-  "Review connection observations.": "查看连接观测信息。",
-  "The selected endpoints remain unchanged. TLS certificate and SSH host fingerprint values are recorded or shown when available; untrusted, mismatched, changed, unregistered or unavailable values do not block the connection. Network and authentication failures still fail normally.": "保持已选端点不变。TLS 证书和 SSH 主机指纹在可获得时记录或提示；不受信、名称不符、发生变化、未登记或无法展示不会阻断连接。网络与身份认证失败仍按实际情况报错。",
-  "For installation, provide the selected Tower HTTPS origin and administrator. Normal silent commands require no fingerprint, CA or additional confirmation flag: the explicit operation and its parameters authorize that operation. Use the CLI's supported credential input; do not put passwords or private keys in logs or website forms.": "安装时提供已选的 Tower HTTPS 地址和管理员。普通静默命令无需指纹、CA 或额外确认参数：明确给出的操作及其参数即执行该操作。请使用 CLI 支持的凭据输入方式，不要将密码或私钥写入日志或网站表单。",
-  "Saved legacy connections can be verified without migrating them for an identity check. Connection editing and saving still require explicit Connections v2 migration where applicable. Verification of a saved connection is available outside the disabled legacy editor.": "已保存的旧连接可直接验证，无需为身份检查先行迁移。适用时，编辑和保存仍需显式迁移到 Connections v2。已保存连接的验证入口位于禁用的旧编辑器之外。",
-  "Emergency disable uses the selected SSH connection. It writes a persistent disable marker and does not depend on healthy Tower Web/API or Kubernetes services. A browser that is already stuck may need a refresh; this is not process isolation.": "紧急禁用使用已选 SSH 连接。它写入持久禁用标记，不依赖健康的 Tower Web/API 或 Kubernetes 服务。已卡住的浏览器可能需要刷新；这不是进程隔离。",
+  "Framework 0.2.1 recovery-flow fixes remain under review and have not been deployed. The current development/test deployment remains framework 0.2.0 and is enabled. Local recovery checks do not establish acceptance of new client builds or live recovery behavior.": "框架 0.2.1 的恢复流程修复候选仍在复核，尚未部署。当前开发测试环境仍部署框架 0.2.0，保持启用。本地恢复检查不能证明新客户端构建或真实恢复行为已经验收。"
 };
 
 export const richMessages = {

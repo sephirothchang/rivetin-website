@@ -6,6 +6,10 @@ After an interrupted process, preserve both lock files, the transaction journal,
 
 If the catalog lock has a null manifest hash, or the journal is missing or invalid, recovery cannot establish the outcome and retains the lock. Treat this as an unknown outcome requiring manual investigation; do not remove the catalog lock or retry an import merely to bypass the error. Abrupt power loss and non-cooperating filesystem writers are not covered by these guarantees. The legacy v3 importer does not provide the v4 persistent journal.
 
+## ML publication identity
+
+The active public index is `/catalog/v4/plugins.json`. Historical `.rivetin.json` rows keep formal `X.Y.Z` package versions; standard ZIP rows use the delivered version grammar, which may include the canonical pre-release form. Source-version metadata and minimum framework versions use the current Rivetin version contract. The v3 index and inactive package bytes are retained in the source archive and checked against their recorded hashes. The site build excludes the archived index and inactive downloads.
+
 ## Standard ZIP package entries
 
 Schema 4 keeps historical `.rivetin.json` rows and standard ZIP rows in one index. A published standard ZIP row uses `/downloads/plugins/<id>/<version>/<id>-<version>.zip`; its `sha256` is the SHA-256 of the whole ZIP and the file is immutable. Within one plugin id, different versions may be listed, and a legacy row may coexist with its same-version ZIP successor; only an exact duplicate (id, version, extension) row is rejected. A plugin's highest published version may not move backwards when a new index is imported.
@@ -13,10 +17,6 @@ Schema 4 keeps historical `.rivetin.json` rows and standard ZIP rows in one inde
 The deprecated `frameworkMaxVersionExclusive` carrier may remain in catalog rows for older readers. It has no runtime semantics and is not part of the package-versus-catalog identity comparison; the remaining compatibility fields (schema version, framework API, exact tower builds, minimum framework version, SMTX) must match the package metadata. Package identity also compares id, version, name, description, author, license and permissions exactly. The immutable ZIP bytes are always checked by their whole-file SHA-256.
 
 Website-side standard package checks mirror the framework install contract: root `metadata` (metadata v2), fixed `plugin.js` / `entrypoint.py` entries declared by the metadata, a root `LICENSE`, `architectures` containing the current runtime architecture (`amd64`), `runtimeEnvironment` equal to `rivetin-runtime-1.1.0`, and the bounded ZIP reader (at most 512 entries, 16 MiB per entry, 64 MiB total uncompressed, 32 MiB package). Absolute paths, `..`, directories, symlinks, duplicate names and unsupported compression fail closed. The website never imports or executes package code. The same limits are shared by `scripts/package-limits.mjs` and the framework's `framework/shared/package-limits.js`; the runtime environment identifiers are kept in `scripts/runtime-identity.mjs`.
-
-## ML publication identity
-
-The active public index is `/catalog/v4/plugins.json`. Its `published` entries use formal `X.Y.Z` versions and their immutable package bytes. Source-version metadata and minimum framework versions use the current Rivetin version contract. The v3 index and inactive package bytes are retained in the source archive and checked against their recorded hashes. The site build excludes the archived index and inactive downloads.
 
 Optional v4 identity uses `/catalog/v4/release.json` plus immutable `/catalog/v4/releases/<ID>/plugins.json` and `release.json`. The two index bodies must be byte-identical, as must the two metadata bodies. `catalog-release-ledger.json` is source-controlled public state, separate from the package-integrity ledger. It contains public IDs, catalog schema/hash/length, derived snapshot path, issuance time, metadata hash/length, status and optional verification time. It contains no request UUID, local path, actor or private journal data.
 

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { MAX_LEGACY_PACKAGE_BYTES, MAX_STANDARD_PACKAGE_BYTES } from './package-limits.mjs';
-import { validReleaseVersion } from './release-version.mjs';
+import { compareReleaseVersions, parseReleaseVersion, validReleaseVersion } from './release-version.mjs';
 
 export const SITE='https://rivetin.dev';
 export const INDEX_PATH='/catalog/plugins.json';

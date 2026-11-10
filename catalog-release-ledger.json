@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "currentPublicationId": "ML-V4-261029.1",
+  "currentPublicationId": "ML-V4-261110.0",
   "releases": [
     {
       "publicationId": "ML-V4-261029.0",
@@ -23,6 +23,18 @@
       "publishedAt": "2026-10-29T12:40:20.599Z",
       "metadataSHA256": "5ce292505cf8848f93253da920cdbaa6334fcbccb4f8520cd49db9c5537cb3f1",
       "metadataBytes": 370,
+      "status": "local-committed",
+      "verifiedAt": null
+    },
+    {
+      "publicationId": "ML-V4-261110.0",
+      "catalogSchemaVersion": 4,
+      "catalogSHA256": "1d37f1892cb5d1859ed006974be2b6d4511ed11fbfe3b74e90b251731a954e02",
+      "catalogBytes": 19865,
+      "snapshotPath": "/catalog/v4/releases/ML-V4-261110.0/plugins.json",
+      "publishedAt": "2026-11-10T14:52:34.361Z",
+      "metadataSHA256": "251e59719b7f1ba7b3214f6637a71fdcdfb23bcf5cefac5ed9157373e647b8ba",
+      "metadataBytes": 371,
       "status": "local-committed",
       "verifiedAt": null
     }

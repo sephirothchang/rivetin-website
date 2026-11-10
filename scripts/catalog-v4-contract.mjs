@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import { exact, fail, validId, validHash, packagePath, parsePackagePath, compareVersions, validatePackage, validSchema2Minimum } from './catalog-contract.mjs';
+import { exact, fail, validId, validVersion, validHash, packagePath, parsePackagePath, compareVersions, validatePackage, validSchema2Minimum } from './catalog-contract.mjs';
 import { compareReleaseVersions, validReleaseVersion } from './release-version.mjs';
 import { validateStandardZip } from './standard-zip.mjs';
 
@@ -23,7 +23,12 @@ export function validateV4Catalog(value){
   // version). Only exact duplicate (id, version, extension) rows are refused.
   const seen=new Set();
   for(const item of value.plugins){
-    if(!exact(item,fields)||!validId(item.id)||!validReleaseVersion(item.version)||item.frameworkApi!==1||!['draft','published'].includes(item.status)||!localized(item.name,120)||!localized(item.description,500)||!text(item.author,120)||item.license!=='MIT'||!Array.isArray(item.permissions)||item.permissions.length>20||new Set(item.permissions).size!==item.permissions.length||item.permissions.some(p=>typeof p!=='string'||p.length>100||!/^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/u.test(p)))fail('CATALOG_V4_ENTRY_INVALID');
+    if(!exact(item,fields)||!validId(item.id)||item.frameworkApi!==1||!['draft','published'].includes(item.status)||!localized(item.name,120)||!localized(item.description,500)||!text(item.author,120)||item.license!=='MIT'||!Array.isArray(item.permissions)||item.permissions.length>20||new Set(item.permissions).size!==item.permissions.length||item.permissions.some(p=>typeof p!=='string'||p.length>100||!/^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/u.test(p)))fail('CATALOG_V4_ENTRY_INVALID');
+    // Historical public package versions stay formal; a standard-ZIP row may use
+    // the release-version grammar (including pre-releases) for the delivered
+    // package itself. Draft rows have no package path and stay on the formal rule.
+    const zipPath=typeof item.downloadPath==='string'&&item.downloadPath.endsWith('.zip');
+    if(!(zipPath?validReleaseVersion(item.version):validVersion(item.version)))fail('CATALOG_V4_ENTRY_INVALID');
     validateV4Compatibility(item.compatibility);
     if(item.status==='published'){
       let parsed;

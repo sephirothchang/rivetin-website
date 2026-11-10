@@ -1,0 +1,512 @@
+{
+  "schemaVersion": 4,
+  "plugins": [
+    {
+      "id": "rivetin-context-menu",
+      "version": "0.5.9",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-context-menu/0.5.9/rivetin-context-menu-0.5.9.rivetin.json",
+      "sha256": "bd33fce9ab2c664f8612cb873b4391fb53038c09cfd8bcfb40f9de141556f8ee",
+      "name": {
+        "zh-CN": "资源右键菜单",
+        "en-US": "Resource context menus"
+      },
+      "description": {
+        "zh-CN": "资源列表多级右键菜单与虚拟机原生配置快捷入口，复用 CloudTower 官方菜单、对话框和确认流程。",
+        "en-US": "Cascading resource-row menus and VM shortcuts reuse CloudTower native menus, dialogs and confirmation flows."
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [
+        "ui.context-menu"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "tower": "CloudTower 4.9.0 public DOM; framework 0.2 candidate, live validation pending.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "frameworkMinVersion": "0.2.0",
+        "frameworkMaxVersionExclusive": "0.3.0",
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-disk-smart-info",
+      "version": "0.1.6",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-disk-smart-info/0.1.6/rivetin-disk-smart-info-0.1.6.rivetin.json",
+      "sha256": "25ff2bf981abff5b8aaad4b78a7a60c9e76947e7594f1b0e66885de18f5aa129",
+      "name": {
+        "zh-CN": "磁盘健康展示",
+        "en-US": "Disk SMART information"
+      },
+      "description": {
+        "zh-CN": "CloudTower 4.9.0 受控验收候选：物理盘 SMART 与每日历史、本地化和劣化风险；真实主机采集尚未验收。",
+        "en-US": "CloudTower 4.9.0 controlled acceptance candidate: localized disk SMART, daily history and deterioration. Live host collection remains unverified."
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "ssh.channel.use",
+        "disk.smart.read"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "tower": "CloudTower 4.9.0 controlled candidate; real SMART collection remains unverified.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "frameworkMinVersion": "0.2.0",
+        "frameworkMaxVersionExclusive": "0.3.0",
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-ipmi-redirection",
+      "version": "0.1.4",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-ipmi-redirection/0.1.4/rivetin-ipmi-redirection-0.1.4.rivetin.json",
+      "sha256": "7472699d221f06c417547bddf5b7e0c334193390e5adc3bd9ecced62d13e80da",
+      "name": {
+        "zh-CN": "IPMI 跳转",
+        "en-US": "IPMI Redirection"
+      },
+      "description": {
+        "zh-CN": "主机 IPMI 地址跳转与 BMC 厂商协议配置。",
+        "en-US": "Host IPMI links and BMC vendor protocol settings."
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "host.ipmi.enhance",
+        "bmc.session.launch"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "tower": "CloudTower 4.9.0; Rivetin >=0.2.0 <0.3.0. IPMI HTTPS redirection only.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "frameworkMinVersion": "0.2.0",
+        "frameworkMaxVersionExclusive": "0.3.0",
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-ssh-channel",
+      "version": "0.1.2",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-ssh-channel/0.1.2/rivetin-ssh-channel-0.1.2.rivetin.json",
+      "sha256": "01de1e563cc07a617f7703fad944315e8952d222e065be4b4e7425571fb46ad6",
+      "name": {
+        "zh-CN": "SSH 通道",
+        "en-US": "SSH channel"
+      },
+      "description": {
+        "zh-CN": "统一管理子插件的受控 SSH 采集、命令审计与执行授权，默认停用。",
+        "en-US": "Shared controlled SSH collection, command review and execution approvals; disabled by default."
+      },
+      "author": "Sephiroth Chang & Rivetin contributors",
+      "license": "MIT",
+      "permissions": [],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "tower": "Requires the Rivetin SSH channel broker; live collection compatibility must be verified for each host build.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "frameworkMinVersion": "0.2.0",
+        "frameworkMaxVersionExclusive": "0.3.0",
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-vcenter-manager",
+      "version": "0.0.7-alpha.24",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-vcenter-manager/0.0.7-alpha.24/rivetin-vcenter-manager-0.0.7-alpha.24.zip",
+      "sha256": "962a837a6dd0a386d0d1ebcb9eb143fbfd1a961b89a2f3c402ca8f466032de99",
+      "name": {
+        "zh-CN": "VMware vCenter 纳管",
+        "en-US": "VMware vCenter management"
+      },
+      "description": {
+        "zh-CN": "vCenter alpha 候选，提供集群、主机、VM、模板管理及详细虚拟硬件配置，支持同主机存储迁移、标准网络、组规则、实时主机监控、事件与 VM 快照。",
+        "en-US": "vCenter alpha candidate with cluster, host, VM, template and advanced virtual hardware management, same-host storage relocation, standard networking, groups and rules, realtime host monitoring, events and VM snapshots."
+      },
+      "author": "PluginKit contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "provider.connections"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "tower": "CloudTower 4.9.0 target; full management and integrated live acceptance pending.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-vcenter-manager",
+      "version": "0.1.1-alpha.1",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-vcenter-manager/0.1.1-alpha.1/rivetin-vcenter-manager-0.1.1-alpha.1.zip",
+      "sha256": "861a86eec7475bef357198d7662bdd9b98c4373bc244a5378fa742cc45d3f626",
+      "name": {
+        "zh-CN": "VMware vCenter 纳管",
+        "en-US": "VMware vCenter management"
+      },
+      "description": {
+        "zh-CN": "vCenter alpha 候选，提供集群、主机、VM、模板管理及详细虚拟硬件配置，支持同主机存储迁移、标准网络、组规则、实时主机监控、事件与 VM 快照。",
+        "en-US": "vCenter alpha candidate with cluster, host, VM, template and advanced virtual hardware management, same-host storage relocation, standard networking, groups and rules, realtime host monitoring, events and VM snapshots."
+      },
+      "author": "PluginKit contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "provider.connections"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "tower": "CloudTower 4.9.0 target; full management and integrated live acceptance pending.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-ssh-channel",
+      "version": "0.1.3",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-ssh-channel/0.1.3/rivetin-ssh-channel-0.1.3.zip",
+      "sha256": "51cb9148afaae40de81b03537cff62ce27b1e5b0e95fce84d8b075185728ffd6",
+      "name": {
+        "zh-CN": "SSH 通道",
+        "en-US": "SSH channel"
+      },
+      "description": {
+        "zh-CN": "统一管理子插件的受控 SSH 采集、命令审计与执行授权，默认停用。",
+        "en-US": "Shared controlled SSH collection, command review and execution approvals; disabled by default."
+      },
+      "author": "Sephiroth Chang & Rivetin contributors",
+      "license": "MIT",
+      "permissions": [],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "frameworkMaxVersionExclusive": "0.3.0",
+        "tower": "Requires the Rivetin SSH channel broker; live collection compatibility must be verified for each host build.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-disk-smart-info",
+      "version": "0.1.7",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-disk-smart-info/0.1.7/rivetin-disk-smart-info-0.1.7.zip",
+      "sha256": "ccd133c889b7d2c2191abf7f0c7506134a8d5563370ebdb2a21a21918c28fba7",
+      "name": {
+        "zh-CN": "磁盘健康展示",
+        "en-US": "Disk SMART information"
+      },
+      "description": {
+        "zh-CN": "CloudTower 4.9.0 受控验收候选：物理盘 SMART 与每日历史、本地化和劣化风险；真实主机采集尚未验收。",
+        "en-US": "CloudTower 4.9.0 controlled acceptance candidate: localized disk SMART, daily history and deterioration. Live host collection remains unverified."
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "ssh.channel.use",
+        "disk.smart.read"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "frameworkMaxVersionExclusive": "0.3.0",
+        "tower": "CloudTower 4.9.0 controlled candidate; real SMART collection remains unverified.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-network-topology",
+      "version": "0.1.6",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-network-topology/0.1.6/rivetin-network-topology-0.1.6.zip",
+      "sha256": "f7dd66c3ac1d1c3830639123922b2244b6eb18539930b3b1b98b79b4c977ef33",
+      "name": {
+        "zh-CN": "网络拓扑可视化编辑",
+        "en-US": "Network topology visual editor"
+      },
+      "description": {
+        "zh-CN": "集群拓扑只读关系与本地草稿，以及单VDS完整NIC集合的服务端计划和事务状态客户端。真实执行须通过独立身份、worker及可逆性能力核验；实机事务待验。",
+        "en-US": "Cluster topology reads and local drafts, plus a server-plan and transaction client for a complete NIC set on one VDS. Live execution requires verified independent identity, worker and reversibility; live transactions pending."
+      },
+      "author": "PluginKit contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "network.topology.write"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "frameworkMaxVersionExclusive": "0.3.0",
+        "tower": "CloudTower 4.9.0 target; topology work-page integration pending validation.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-context-menu",
+      "version": "0.5.10",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-context-menu/0.5.10/rivetin-context-menu-0.5.10.zip",
+      "sha256": "efe50fc4b716045e28a39cc71a2eab07b5f3ae89a889eb7c2ff4c43b561deb8d",
+      "name": {
+        "zh-CN": "资源右键菜单",
+        "en-US": "Resource context menus"
+      },
+      "description": {
+        "zh-CN": "资源列表多级右键菜单与虚拟机原生配置快捷入口，复用 CloudTower 官方菜单、对话框和确认流程。",
+        "en-US": "Cascading resource-row menus and VM shortcuts reuse CloudTower native menus, dialogs and confirmation flows."
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [
+        "ui.context-menu"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none",
+        "tower": "CloudTower 4.9.0 public DOM; framework 0.3 standard ZIP candidate, live validation pending."
+      }
+    },
+    {
+      "id": "rivetin-dark-mode",
+      "version": "0.1.11",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-dark-mode/0.1.11/rivetin-dark-mode-0.1.11.zip",
+      "sha256": "7d9b4b5f79328a6aedcd29578dcb8aba1c0bb5858f5522804779b8bc817ddcf1",
+      "name": {
+        "zh-CN": "CloudTower 暗黑模式",
+        "en-US": "CloudTower dark mode"
+      },
+      "description": {
+        "zh-CN": "在提醒工具之前用月亮/太阳图标切换主题，仅保存当前浏览器的个人偏好。",
+        "en-US": "Switch themes with a moon/sun icon before the notification tools, saving a personal browser preference."
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "tower": "CloudTower 4.9.0 target; 0.3.x standard ZIP (metadata v2); live header and theme acceptance pending.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-ipmi-redirection",
+      "version": "0.1.5",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-ipmi-redirection/0.1.5/rivetin-ipmi-redirection-0.1.5.zip",
+      "sha256": "bfb0abf57a94b1e170cad54c2f5369a17a18ac30b3fb395fadc212401c75c032",
+      "name": {
+        "zh-CN": "IPMI 跳转",
+        "en-US": "IPMI Redirection"
+      },
+      "description": {
+        "zh-CN": "主机 IPMI 地址跳转与 BMC 厂商协议配置。",
+        "en-US": "Host IPMI links and BMC vendor protocol settings."
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "host.ipmi.enhance",
+        "bmc.session.launch"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "tower": "CloudTower 4.9.0; Rivetin 0.3.x standard ZIP (>=0.3.0). IPMI HTTPS redirection only.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "frameworkMinVersion": "0.3.0",
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-security-policy-converter",
+      "version": "0.1.5",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-security-policy-converter/0.1.5/rivetin-security-policy-converter-0.1.5.zip",
+      "sha256": "f6963671d014c240535d6f6dd3953d20ffbca7b39b3ade30669a028151ae9728",
+      "name": {
+        "zh-CN": "安全策略转换",
+        "en-US": "Security policy converter"
+      },
+      "description": {
+        "zh-CN": "从清单与流量 CSV 生成 MONITOR 候选策略审查稿；不连接或修改 Everoute。",
+        "en-US": "Generate MONITOR policy review drafts from inventory and traffic CSV. No live Everoute operations."
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "tower": "CloudTower 4.9.0 target; 0.3.x standard ZIP; native acceptance pending. No live Everoute operations.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-ssh-channel",
+      "version": "0.1.4",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-ssh-channel/0.1.4/rivetin-ssh-channel-0.1.4.zip",
+      "sha256": "92683bc3a548238d69ed5e8a20901332deac0e688379d25fa1097e9fa7925c1c",
+      "name": {
+        "zh-CN": "SSH 通道",
+        "en-US": "SSH channel"
+      },
+      "description": {
+        "zh-CN": "统一管理子插件的受控 SSH 采集、命令审计与执行授权，默认停用。",
+        "en-US": "Shared controlled SSH collection, command review and execution approvals; disabled by default."
+      },
+      "author": "Sephiroth Chang & Rivetin contributors",
+      "license": "MIT",
+      "permissions": [],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "tower": "Requires the Rivetin SSH channel broker; live collection compatibility must be verified for each host build.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-disk-smart-info",
+      "version": "0.1.8",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-disk-smart-info/0.1.8/rivetin-disk-smart-info-0.1.8.zip",
+      "sha256": "37db8415c2577d612ee163b7636b27e6d63d4458268deda52e1f65111a8cbb43",
+      "name": {
+        "zh-CN": "磁盘健康展示",
+        "en-US": "Disk SMART information"
+      },
+      "description": {
+        "zh-CN": "CloudTower 4.9.0 受控验收候选：物理盘 SMART 与每日历史、本地化和劣化风险；真实主机采集尚未验收。",
+        "en-US": "CloudTower 4.9.0 controlled acceptance candidate: localized disk SMART, daily history and deterioration. Live host collection remains unverified."
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "ssh.channel.use",
+        "disk.smart.read"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "tower": "CloudTower 4.9.0 controlled candidate; real SMART collection remains unverified.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    },
+    {
+      "id": "rivetin-network-topology",
+      "version": "0.1.7",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-network-topology/0.1.7/rivetin-network-topology-0.1.7.zip",
+      "sha256": "4059bbfc556590e873db917e5dc1f5818bd41f244d92821dfeaba1c6714a222e",
+      "name": {
+        "zh-CN": "网络拓扑可视化编辑",
+        "en-US": "Network topology visual editor"
+      },
+      "description": {
+        "zh-CN": "集群拓扑只读关系与本地草稿，以及单VDS完整NIC集合的服务端计划和事务状态客户端。真实执行须通过独立身份、worker及可逆性能力核验；实机事务待验。",
+        "en-US": "Cluster topology reads and local drafts, plus a server-plan and transaction client for a complete NIC set on one VDS. Live execution requires verified independent identity, worker and reversibility; live transactions pending."
+      },
+      "author": "PluginKit contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "network.topology.write"
+      ],
+      "compatibility": {
+        "schemaVersion": 2,
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "tower": "CloudTower 4.9.0 target; topology work-page integration pending validation.",
+        "towerBuilds": [
+          "4.9.0"
+        ],
+        "smtx": "none"
+      }
+    }
+  ]
+}

@@ -107,8 +107,7 @@ for(const id of ['release-status','compatibility','installation','extension-work
 assert.ok(guide.includes('data-cli-executable=".\\rivetin-windows-amd64.exe"'),'Missing Windows executable example');
 assert.ok(guide.includes('data-cli-executable="./rivetin-darwin-arm64"'),'Missing macOS executable example');
 assert.ok(guide.includes('data-cli-executable="./rivetin-linux-amd64"'),'Missing Linux executable example');
-assert.ok(guide.includes('Normal silent commands require no fingerprint, CA or additional confirmation flag'),'Missing candidate connection contract');
-assert.ok(!guide.includes('--ssh-hostkey SHA256:&lt;VERIFIED_HOST_KEY&gt;'),'Old mandatory fingerprint example remains');
+assert.ok(guide.includes('--ssh-hostkey SHA256:&lt;VERIFIED_HOST_KEY&gt;'),'Missing explicit host trust in command examples');
 assert.equal(project.schemaVersion,2);
 assert.equal(project.candidateRelease.currentDeployment,'unverified');
 assert.equal(project.candidateRelease.status,'not-admitted');

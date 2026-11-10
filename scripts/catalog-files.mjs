@@ -10,6 +10,7 @@ import { RELEASE_PATH, RELEASE_LEDGER, MAX_RELEASE_BYTES, MAX_RELEASE_LEDGER_BYT
 
 const LEDGER='catalog-integrity.json';
 const maxForPath=value=>packageMaxBytes(parsePackagePath(value).extension);
+const maxForName=name=>name.startsWith('downloads/plugins/')?maxForPath('/'+name):MAX_PACKAGE_BYTES;
 export async function optionalStat(file){try{return await lstat(file);}catch(error){if(error.code==='ENOENT')return null;throw error;}}
 function relative(name){if(typeof name!=='string'||!name||/[\\:\x00-\x1f\x7f]/u.test(name)||name.split('/').some(part=>!part||part==='.'||part==='..'))fail('CATALOG_PATH_INVALID');return name;}
 export async function safePath(root,name,{missing=false,directory=false}={}){
@@ -192,24 +193,24 @@ export async function copyPublicCatalog(siteRoot,distRoot,{omitCurrentRelease=fa
     const name=`${dir}/${file}`;
     if(expected.has(name))continue;
     if(!activeOnly||!sourceFiles.includes(name))fail('CATALOG_DIST_FILE_UNREGISTERED');
-    const previous=await boundedFile(distRoot,name,MAX_PACKAGE_BYTES),original=await boundedFile(state.publicRoot,name,MAX_PACKAGE_BYTES);
+    const previous=await boundedFile(distRoot,name,maxForName(name)),original=await boundedFile(state.publicRoot,name,maxForName(name));
     if(!previous.equals(original))fail('CATALOG_DIST_IMMUTABLE_CHANGED');
     retired.push(name);
   }
   if(!state.catalog)return state;
   for(const name of expected){
-    const record=state.packages.find(item=>item.path===`/${name}`),max=record?maxForPath(record.path):MAX_PACKAGE_BYTES;
-    const raw=name===INDEX_PATH.slice(1)?state.indexRaw:name===V4_INDEX_PATH.slice(1)?state.v4Raw:await boundedFile(state.publicRoot,name,max);
+    const raw=name===INDEX_PATH.slice(1)?state.indexRaw:name===V4_INDEX_PATH.slice(1)?state.v4Raw:await boundedFile(state.publicRoot,name,maxForName(name));
+    const record=state.packages.find(item=>item.path===`/${name}`);
     if(record&&(raw.length!==record.bytes||sha256(raw)!==record.sha256))fail('CATALOG_INPUT_CHANGED');
     await ensureParents(distRoot,name);const target=await safePath(distRoot,name,{missing:true});
-    if(record&&await optionalStat(target)){const previous=await boundedFile(distRoot,name,max);if(!raw.equals(previous))fail('CATALOG_DIST_IMMUTABLE_CHANGED');}
+    if(record&&await optionalStat(target)){const previous=await boundedFile(distRoot,name,maxForName(name));if(!raw.equals(previous))fail('CATALOG_DIST_IMMUTABLE_CHANGED');}
     if((name===INDEX_PATH.slice(1)||name===V4_INDEX_PATH.slice(1))&&!(await boundedFile(state.publicRoot,name,MAX_INDEX_BYTES)).equals(raw))fail('CATALOG_INPUT_CHANGED');
     await writeFile(target,raw);
   }
   const after=await publicCatalogState(siteRoot);
   if(!isDeepStrictEqual(after.indexRaw,state.indexRaw)||!isDeepStrictEqual(after.v4Raw,state.v4Raw)||!isDeepStrictEqual(after.ledgerRaw,state.ledgerRaw)||!isDeepStrictEqual(after.releaseLedgerRaw,state.releaseLedgerRaw)||!isDeepStrictEqual(after.releaseRaw,state.releaseRaw))fail('CATALOG_INPUT_CHANGED');
   for(const name of retired){
-    const previous=await boundedFile(distRoot,name,MAX_PACKAGE_BYTES),original=await boundedFile(state.publicRoot,name,MAX_PACKAGE_BYTES);
+    const previous=await boundedFile(distRoot,name,maxForName(name)),original=await boundedFile(state.publicRoot,name,maxForName(name));
     if(!previous.equals(original))fail('CATALOG_DIST_IMMUTABLE_CHANGED');
     await unlink(await safePath(distRoot,name));
   }

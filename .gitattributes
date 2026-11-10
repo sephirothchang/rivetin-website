@@ -1,0 +1,5 @@
+# Public catalog and release state are byte-bound by SHA-256; keep repository
+# bytes verbatim on every platform (no CRLF conversion).
+public/catalog/** -text
+catalog-integrity.json -text
+catalog-release-ledger.json -text

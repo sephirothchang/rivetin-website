@@ -2,9 +2,19 @@
   "schemaVersion": 1,
   "packages": [
     {
+      "path": "/downloads/plugins/rivetin-context-menu/0.5.10/rivetin-context-menu-0.5.10.zip",
+      "sha256": "efe50fc4b716045e28a39cc71a2eab07b5f3ae89a889eb7c2ff4c43b561deb8d",
+      "bytes": 44201
+    },
+    {
       "path": "/downloads/plugins/rivetin-context-menu/0.5.9/rivetin-context-menu-0.5.9.rivetin.json",
       "sha256": "bd33fce9ab2c664f8612cb873b4391fb53038c09cfd8bcfb40f9de141556f8ee",
       "bytes": 166781
+    },
+    {
+      "path": "/downloads/plugins/rivetin-dark-mode/0.1.11/rivetin-dark-mode-0.1.11.zip",
+      "sha256": "7d9b4b5f79328a6aedcd29578dcb8aba1c0bb5858f5522804779b8bc817ddcf1",
+      "bytes": 13101
     },
     {
       "path": "/downloads/plugins/rivetin-disk-smart-info/0.1.3/rivetin-disk-smart-info-0.1.3.rivetin.json",
@@ -17,6 +27,16 @@
       "bytes": 93206
     },
     {
+      "path": "/downloads/plugins/rivetin-disk-smart-info/0.1.7/rivetin-disk-smart-info-0.1.7.zip",
+      "sha256": "ccd133c889b7d2c2191abf7f0c7506134a8d5563370ebdb2a21a21918c28fba7",
+      "bytes": 56534
+    },
+    {
+      "path": "/downloads/plugins/rivetin-disk-smart-info/0.1.8/rivetin-disk-smart-info-0.1.8.zip",
+      "sha256": "37db8415c2577d612ee163b7636b27e6d63d4458268deda52e1f65111a8cbb43",
+      "bytes": 57484
+    },
+    {
       "path": "/downloads/plugins/rivetin-ipmi-redirection/0.1.2/rivetin-ipmi-redirection-0.1.2.rivetin.json",
       "sha256": "70f64ae99569e540d664a553102f1960e62768ed8ac29b952b5ae5987daf1683",
       "bytes": 79060
@@ -27,14 +47,34 @@
       "bytes": 83476
     },
     {
+      "path": "/downloads/plugins/rivetin-ipmi-redirection/0.1.5/rivetin-ipmi-redirection-0.1.5.zip",
+      "sha256": "bfb0abf57a94b1e170cad54c2f5369a17a18ac30b3fb395fadc212401c75c032",
+      "bytes": 27082
+    },
+    {
       "path": "/downloads/plugins/rivetin-network-topology/0.1.3/rivetin-network-topology-0.1.3.rivetin.json",
       "sha256": "38ac35b6b36a21e94416c20cdccbf2ebed72a3dd294a5419f256c2865e0110e4",
       "bytes": 47043
     },
     {
+      "path": "/downloads/plugins/rivetin-network-topology/0.1.6/rivetin-network-topology-0.1.6.zip",
+      "sha256": "f7dd66c3ac1d1c3830639123922b2244b6eb18539930b3b1b98b79b4c977ef33",
+      "bytes": 42355
+    },
+    {
+      "path": "/downloads/plugins/rivetin-network-topology/0.1.7/rivetin-network-topology-0.1.7.zip",
+      "sha256": "4059bbfc556590e873db917e5dc1f5818bd41f244d92821dfeaba1c6714a222e",
+      "bytes": 42587
+    },
+    {
       "path": "/downloads/plugins/rivetin-security-policy-converter/0.1.4/rivetin-security-policy-converter-0.1.4.rivetin.json",
       "sha256": "17f7d587c6a01eb28a2cf9ab95e53dffdd98dd66ba87e4e11d40b2e1d3f081f8",
       "bytes": 44650
+    },
+    {
+      "path": "/downloads/plugins/rivetin-security-policy-converter/0.1.5/rivetin-security-policy-converter-0.1.5.zip",
+      "sha256": "f6963671d014c240535d6f6dd3953d20ffbca7b39b3ade30669a028151ae9728",
+      "bytes": 15750
     },
     {
       "path": "/downloads/plugins/rivetin-ssh-channel/0.1.1/rivetin-ssh-channel-0.1.1.rivetin.json",
@@ -45,6 +85,26 @@
       "path": "/downloads/plugins/rivetin-ssh-channel/0.1.2/rivetin-ssh-channel-0.1.2.rivetin.json",
       "sha256": "01de1e563cc07a617f7703fad944315e8952d222e065be4b4e7425571fb46ad6",
       "bytes": 13447
+    },
+    {
+      "path": "/downloads/plugins/rivetin-ssh-channel/0.1.3/rivetin-ssh-channel-0.1.3.zip",
+      "sha256": "51cb9148afaae40de81b03537cff62ce27b1e5b0e95fce84d8b075185728ffd6",
+      "bytes": 233795
+    },
+    {
+      "path": "/downloads/plugins/rivetin-ssh-channel/0.1.4/rivetin-ssh-channel-0.1.4.zip",
+      "sha256": "92683bc3a548238d69ed5e8a20901332deac0e688379d25fa1097e9fa7925c1c",
+      "bytes": 234883
+    },
+    {
+      "path": "/downloads/plugins/rivetin-vcenter-manager/0.0.7-alpha.24/rivetin-vcenter-manager-0.0.7-alpha.24.zip",
+      "sha256": "962a837a6dd0a386d0d1ebcb9eb143fbfd1a961b89a2f3c402ca8f466032de99",
+      "bytes": 780378
+    },
+    {
+      "path": "/downloads/plugins/rivetin-vcenter-manager/0.1.1-alpha.1/rivetin-vcenter-manager-0.1.1-alpha.1.zip",
+      "sha256": "861a86eec7475bef357198d7662bdd9b98c4373bc244a5378fa742cc45d3f626",
+      "bytes": 780382
     }
   ]
 }
