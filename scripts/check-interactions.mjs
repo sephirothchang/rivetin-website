@@ -66,7 +66,8 @@ d.querySelector('[data-os="1"]').dispatchEvent(new docs.window.KeyboardEvent('ke
 assert.ok(allCommandsUse('./rivetin-linux-amd64'));
 assert.equal(d.querySelector('[role="tab"][aria-selected="true"]').textContent,'Linux');
 assert.equal(d.activeElement,d.querySelector('[data-os="2"]'));
-assert.ok(cliBlocks.some(code=>code.textContent.includes('SHA256:<VERIFIED_HOST_KEY>')));
+assert.ok(cliBlocks.every(code=>!/(?:--ssh-hostkey|--ca-file|--tls-cert-sha256|--yes)\b/u.test(code.textContent)));
+assert.ok(cliBlocks.some(code=>code.textContent.includes('tower.example.invalid')));
 assert.ok([...d.querySelectorAll('.code-block code')].some(code=>code.textContent.startsWith('node cli/scripts/prepare.mjs')));
 passed.push('platform executable paths, keyboard tabs and preserved placeholders');
 let copied;
