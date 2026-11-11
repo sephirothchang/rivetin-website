@@ -6,7 +6,7 @@ import { frozenDrop, safePath } from './catalog-files.mjs';
 import { SITE, INDEX_PATH, MAX_INDEX_BYTES, packageMaxBytes, parsePackagePath, sha256, fail } from './catalog-contract.mjs';
 
 const typeMatches=(extension,contentType)=>extension==='zip'
-  ? /^application\/(?:zip|octet-stream)(?:\s*;|$)/iu.test(contentType)
+  ? /^application\/(?:zip|octet-stream|x-zip-compressed)(?:\s*;|$)/iu.test(contentType)
   : /^application\/json(?:\s*;|$)/iu.test(contentType);
 export async function download(pathname, expected, max, fetcher=fetch) {
   const response=await fetcher(SITE+pathname,{redirect:'manual',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(20000)});

@@ -234,7 +234,7 @@ test('ZIP staging, import, readback and ledger keep both package formats', async
 
   const output = path.join(dir, 'zip-proof');
   const bodies = new Map([['https://rivetin.dev' + V4_INDEX_PATH, zipDrop.index], ['https://rivetin.dev' + zip.entry.downloadPath, zip.raw]]);
-  const fetcher = async url => new Response(bodies.get(url), { status: 200, headers: { 'content-type': url.endsWith('.zip') ? 'application/zip' : 'application/json' } });
+  const fetcher = async url => new Response(bodies.get(url), { status: 200, headers: { 'content-type': url.endsWith('.zip') ? 'application/x-zip-compressed' : 'application/json' } });
   const receipts = await readbackV4({ dropRoot: zipDrop.location, stageHash: sha256(zipDrop.stage), baseHash: zipDrop.baseHash, output, fetcher });
   assert.equal(receipts.length, 2);
   assert.equal(receipts[0].path, V4_INDEX_PATH);
