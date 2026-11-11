@@ -47,8 +47,8 @@
       "publishedAt": "2026-11-10T21:31:29.887Z",
       "metadataSHA256": "6a722df57e3416e51dfd17ad73336891d18face8cb9dbe57ef0983468da144d1",
       "metadataBytes": 371,
-      "status": "local-committed",
-      "verifiedAt": null
+      "status": "verified",
+      "verifiedAt": "2026-11-11T12:25:23.778Z"
     }
   ]
 }
