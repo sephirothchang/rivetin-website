@@ -30,7 +30,7 @@ const languageText = value => object(value) && Object.keys(value).sort().join() 
 const origin = value => typeof value === 'string' && value.length <= 500 && /^https:\/\/[^\s]+$/u.test(value);
 
 const metadataKeys = new Set(['metadataVersion', 'id', 'version', 'name', 'description', 'author', 'license',
-  'homepage', 'repository', 'compatibility', 'architectures', 'runtimeEnvironment', 'frontend', 'backend',
+  'homepage', 'repository', 'compatibility', 'architectures', 'runtimeEnvironment', 'frontend', 'backend', 'provider',
   'permissions', 'locales', 'configuration', 'lifecycle', 'releaseNotes']);
 const architectures = new Set(['amd64', 'arm64']);
 
@@ -115,6 +115,8 @@ function metadata(value) {
   if (!value.architectures.includes(RUNTIME_ARCHITECTURE)) fail('CATALOG_ZIP_ARCHITECTURE_UNSUPPORTED');
   if (value.runtimeEnvironment !== RUNTIME_ENVIRONMENT) fail('CATALOG_ZIP_RUNTIME_ENVIRONMENT_UNSUPPORTED');
   if (value.frontend === undefined && value.backend === undefined) fail('CATALOG_ZIP_ENTRY_REQUIRED');
+  if (value.provider !== undefined &&
+      (!object(value.provider) || !value.permissions.includes('provider.connections'))) fail('CATALOG_ZIP_METADATA_INVALID');
   if (value.frontend !== undefined &&
       (!object(value.frontend) || Object.keys(value.frontend).some(key => !['entry', 'format'].includes(key)) ||
        value.frontend.entry !== STANDARD_FRONTEND_ENTRY ||

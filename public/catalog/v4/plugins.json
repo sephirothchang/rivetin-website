@@ -507,6 +507,101 @@
         ],
         "smtx": "none"
       }
+    },
+    {
+      "id": "rivetin-vcenter-manager",
+      "version": "0.1.2-alpha.3",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-vcenter-manager/0.1.2-alpha.3/rivetin-vcenter-manager-0.1.2-alpha.3.zip",
+      "sha256": "0495416d1eb0020c18029e91aa317d9b030627d3e186860619a300d58b25c74c",
+      "name": {
+        "en-US": "VMware vCenter management",
+        "zh-CN": "VMware vCenter 纳管"
+      },
+      "description": {
+        "en-US": "vCenter alpha candidate with cluster, host, VM, template and advanced virtual hardware management, same-host storage relocation, standard networking, groups and rules, realtime host monitoring, events and VM snapshots.",
+        "zh-CN": "vCenter alpha 候选，提供集群、主机、VM、模板管理及详细虚拟硬件配置，支持同主机存储迁移、标准网络、组规则、实时主机监控、事件与 VM 快照。"
+      },
+      "author": "PluginKit contributors",
+      "license": "MIT",
+      "permissions": [
+        "inventory.read",
+        "provider.connections"
+      ],
+      "compatibility": {
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.0",
+        "schemaVersion": 2,
+        "smtx": "none",
+        "tower": "CloudTower 4.9.0 target; full management and integrated live acceptance pending.",
+        "towerBuilds": [
+          "4.9.0"
+        ]
+      }
+    },
+    {
+      "id": "rivetin-ransomware-protection",
+      "version": "0.1.0-alpha.11",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-ransomware-protection/0.1.0-alpha.11/rivetin-ransomware-protection-0.1.0-alpha.11.zip",
+      "sha256": "1cc35843b8c4e847d5a59b9254bc92e41763f498c8d4fced4dc5640b0f2772c5",
+      "name": {
+        "en-US": "Ransomware snapshot protection",
+        "zh-CN": "防勒索快照保护"
+      },
+      "description": {
+        "en-US": "Ransomware protection demo built on CloudTower custom alerts and snapshots: pin alert and pre-alert snapshots, rebuild quarantined VMs and produce a delivery manifest. Not a backup; no automatic recovery.",
+        "zh-CN": "基于 CloudTower 自定义报警与快照的防勒索保护插件 Demo：检测异常后固定告警快照与告警前快照，从快照重建隔离虚拟机并生成交付清单。不是备份，不做自动恢复。"
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [
+        "tower.api",
+        "webhook.receive"
+      ],
+      "compatibility": {
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.1-alpha.19",
+        "schemaVersion": 2,
+        "smtx": "none",
+        "tower": "CloudTower 4.9.0 candidate; contracts measured on controlled test environment",
+        "towerBuilds": [
+          "4.9.0"
+        ]
+      }
+    },
+    {
+      "id": "rivetin-disk-smart-info",
+      "version": "0.2.0-alpha.5",
+      "frameworkApi": 1,
+      "status": "published",
+      "downloadPath": "/downloads/plugins/rivetin-disk-smart-info/0.2.0-alpha.5/rivetin-disk-smart-info-0.2.0-alpha.5.zip",
+      "sha256": "8179c85fc9b8294bd21e0b81a8a6a70568b91427cc95a8fd6580b72d6ef26696",
+      "name": {
+        "en-US": "Disk SMART information",
+        "zh-CN": "磁盘健康展示"
+      },
+      "description": {
+        "en-US": "CloudTower 4.9.0 controlled acceptance candidate: localized disk SMART, daily history and deterioration. Live host collection remains unverified.",
+        "zh-CN": "CloudTower 4.9.0 受控验收候选：物理盘 SMART 与每日历史、本地化和劣化风险；真实主机采集尚未验收。"
+      },
+      "author": "Rivetin contributors",
+      "license": "MIT",
+      "permissions": [
+        "tower.api"
+      ],
+      "compatibility": {
+        "frameworkApi": 1,
+        "frameworkMinVersion": "0.3.1-alpha.18",
+        "schemaVersion": 2,
+        "smtx": "none",
+        "tower": "CloudTower 4.9.0 controlled candidate; real SMART collection remains unverified.",
+        "towerBuilds": [
+          "4.9.0"
+        ]
+      }
     }
   ]
 }

@@ -70,9 +70,11 @@ export async function stageV4({siteRoot,dropRoot,stageHash,baseHash,output,previ
   else if(previousV4){validateV4Catalog(previousV4);validateV4Transition(previousV4,drop.catalog);}
   const ledger=new Map(state.packages.map(record=>[record.path,record]));
   for(const record of drop.packages){const old=ledger.get(record.path);if(old&&(old.sha256!==record.sha256||old.bytes!==record.bytes))fail('CATALOG_SAME_VERSION_IMMUTABLE');ledger.set(record.path,record);}
+  const historyMax=new Map();
+  for(const old of state.packages){const identity=parsePackagePath(old.path);if(!historyMax.has(identity.id)||compareReleaseVersions(identity.version,historyMax.get(identity.id))>0)historyMax.set(identity.id,identity.version);}
   for(const entry of drop.catalog.plugins.filter(p=>p.status==='published')){
     const record=ledger.get(entry.downloadPath);if(!record||record.sha256!==entry.sha256)fail('CATALOG_PUBLISHED_FILE_MISSING');
-    if(state.packages.map(old=>parsePackagePath(old.path)).some(old=>old.id===entry.id&&compareReleaseVersions(entry.version,old.version)<0))fail('CATALOG_VERSION_DOWNGRADE');
+    if(!state.packages.some(old=>old.path===entry.downloadPath)&&historyMax.has(entry.id)&&compareReleaseVersions(entry.version,historyMax.get(entry.id))<0)fail('CATALOG_VERSION_DOWNGRADE');
     if(!drop.packages.some(p=>p.path===entry.downloadPath))validateV4Package(await boundedFile(state.publicRoot,entry.downloadPath.slice(1),maxFor(entry.downloadPath)),entry);
   }
   await mkdir(resolved); // exclusive: do not overwrite any existing staging output

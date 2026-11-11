@@ -1,10 +1,10 @@
 {
   "metadataSchemaVersion": 1,
-  "publicationId": "ML-V4-261110.0",
+  "publicationId": "ML-V4-261111.0",
   "catalogSchemaVersion": 4,
   "catalogPath": "/catalog/v4/plugins.json",
-  "catalogSHA256": "1d37f1892cb5d1859ed006974be2b6d4511ed11fbfe3b74e90b251731a954e02",
-  "catalogBytes": 19865,
-  "snapshotPath": "/catalog/v4/releases/ML-V4-261110.0/plugins.json",
-  "publishedAt": "2026-11-10T14:52:34.361Z"
+  "catalogSHA256": "e9f3a61a9d62fb2f9570ea69fab475cce82a643f1de461d77ef41f36a4782cba",
+  "catalogBytes": 23942,
+  "snapshotPath": "/catalog/v4/releases/ML-V4-261111.0/plugins.json",
+  "publishedAt": "2026-11-10T21:31:29.887Z"
 }

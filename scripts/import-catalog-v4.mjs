@@ -117,9 +117,14 @@ export async function importV4({siteRoot,dropRoot,stageHash,baseHash,check=false
     const combined=new Map(state.packages.map(p=>[p.path,p]));
     for(const record of drop.packages){const old=combined.get(record.path);if(old&&!same(old,record))fail('CATALOG_SAME_VERSION_IMMUTABLE');combined.set(record.path,record);}
     const packages=ledger({schemaVersion:1,packages:[...combined.values()].sort((a,b)=>a.path.localeCompare(b.path,'en'))}).packages;
+    // Historical packages stay in the ledger; a new catalog row may not introduce
+    // a version lower than the highest package ever published for that plugin,
+    // even after the previous catalog row was delisted. Existing rows are exempt.
+    const historyMax=new Map();
+    for(const old of state.packages){const identity=parsePackagePath(old.path);if(!historyMax.has(identity.id)||compareReleaseVersions(identity.version,historyMax.get(identity.id))>0)historyMax.set(identity.id,identity.version);}
     for(const entry of drop.catalog.plugins.filter(x=>x.status==='published')){
       const record=combined.get(entry.downloadPath);if(!record||record.sha256!==entry.sha256)fail('CATALOG_PUBLISHED_FILE_MISSING');
-      if(state.packages.map(old=>parsePackagePath(old.path)).some(old=>old.id===entry.id&&compareReleaseVersions(entry.version,old.version)<0))fail('CATALOG_VERSION_DOWNGRADE');
+      if(!state.packages.some(old=>old.path===entry.downloadPath)&&historyMax.has(entry.id)&&compareReleaseVersions(entry.version,historyMax.get(entry.id))<0)fail('CATALOG_VERSION_DOWNGRADE');
       if(!drop.packages.some(x=>x.path===entry.downloadPath))validateV4Package(await boundedFile(state.publicRoot,entry.downloadPath.slice(1),maxForPath(entry.downloadPath)),entry);
     }
     const newPackages=drop.packages.filter(p=>!state.packages.some(old=>old.path===p.path));
